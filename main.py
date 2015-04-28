@@ -42,11 +42,11 @@ app = None
 Builder.load_string('''
 #:import WipeTransition kivy.uix.screenmanager.WipeTransition
 <Widget>:
-    canvas.after:
-        Line:
-            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
-            dash_offset: 2
-            dash_length: 3
+#    canvas.after:
+#        Line:
+#            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
+#            dash_offset: 2
+#            dash_length: 3
 
 <ScoreScreen>:
     BoxLayout:
@@ -69,8 +69,8 @@ Builder.load_string('''
             orientation: 'vertical' if self.height > self.width else 'horizontal'
             BoxLayout:
             Label:
-                text: "%s" % root.score
-                font_size: 30
+                text: "당신의 점수는 무려 %s 점" % root.score
+                font_size: 80
                 font_name: 'data/NanumGothic.ttf'
             Button:
                 text: 'Re Start'
@@ -110,11 +110,12 @@ Builder.load_string('''
             orientation: 'vertical' if self.height > self.width else 'horizontal'
             BoxLayout:
             Label:
-                text: 'Crush On You'
-                font_size: 30
+                text: '뿕렋(피하기게임)'
+                font_size: 60
                 font_name: 'data/NanumGothic.ttf'
+                color: 0/255., 0/255., 0/255., 1
             Button:
-                text: 'Start'
+                text: '시작하기'
                 background_color: 122/255., 101/255., 54/255., 1
                 font_name: 'data/NanumGothic.ttf'
                 size_hint_y:0.2
@@ -122,7 +123,7 @@ Builder.load_string('''
             BoxLayout:
                 size_hint_y:0.1
             Button:
-                text: 'End'
+                text: '안먹는 버튼'
                 background_color: 122/255., 101/255., 54/255., 1
                 font_name: 'data/NanumGothic.ttf'
                 size_hint_y:0.2
@@ -150,25 +151,26 @@ Builder.load_string('''
             size_hint_x:0.2
             orientation: 'vertical' if self.height > self.width else 'horizontal'
             Label:
-                text: 'There was a'
+                text: '그곳에는..'
                 font_size: 30
                 font_name: 'data/NanumGothic.ttf'
+                color: 0/255., 0/255., 0/255., 1
             BoxLayout:
                 orientation: 'vertical' if self.height > self.width else 'horizontal'
                 Button:
-                    text: 'Boy'
+                    text: '한 소년이 있었다.'
                     font_size: 30
                     background_color: 218/255., 195/255., 175/255., 1
                     font_name: 'data/NanumGothic.ttf'
                     on_press: root.manager.transition = WipeTransition(); root.manager.current = 'game screen'
                 Button:
-                    text: 'Girl'
+                    text: '한 소녀가 있었다.(x)'
                     font_size: 30
                     background_color: 218/255., 195/255., 175/255., 1
                     font_name: 'data/NanumGothic.ttf'
             BoxLayout:
                 Button:
-                    text: 'Back'
+                    text: '메뉴로'
                     font_size: 30
                     background_color: 218/255., 195/255., 175/255., 1
                     font_name: 'data/NanumGothic.ttf'
@@ -178,20 +180,28 @@ Builder.load_string('''
             size_hint_x:0.1
 
 <Enemy>:
-    size: enemy_image.size
+    size: enemy_image.width/2, enemy_image.height/2
+    center: root.center
     Image:
         id: enemy_image
         source: 'data/girl64.png'
-        pos: root.pos
+        center: root.center
         size: 64, 64
 
 <Player>:
-    size: player_image.size
+    size: player_image.width/2, player_image.height/2
     Image:
         id: player_image
         source: 'data/boy64.png'
-        pos: root.pos
+        center: root.center
         size: 64, 64
+    Label:
+        text: root.comment
+        size: 200, 20,
+        pos: root.x - 15, root.center_y + 30
+        font_size: 15
+        font_name: 'data/NanumGothic.ttf'
+
 
 
 <GameWidget>:
@@ -208,13 +218,18 @@ Builder.load_string('''
 
     Label:
         text: "Score: %s" % root.score
+        font_size: 30
+        font_name: 'data/NanumGothic.ttf'
         pos: root.x, root.height-40
         size: 100, 40
 
     Label:
         text: 'FPS: ' + root.fps if root.fps != None else 'FPS:'
+        font_size: 30
+        font_name: 'data/NanumGothic.ttf'
         pos: root.x, root.height-80
         size: 100, 40
+        halign: 'right'
 
     # Enemy:
     #    id: enemy
@@ -235,6 +250,7 @@ class Player(Widget):
     velocity_x = 0
     velocity_y = 0
     velocity = [0, 0]
+    comment = StringProperty("")
 
     def move(self):
         self.center = Vector(*self.velocity) + self.center
@@ -274,8 +290,7 @@ class CharacterScreen(Screen):
 
 
 class ScoreScreen(Screen):
-    score = 0
-
+    score = NumericProperty(0)
     def on_enter(self):
         self.score = app.last_score
     pass
@@ -288,13 +303,15 @@ class GameWidget(Widget):
     fps = StringProperty(None)
     player = None
     enemies = []
-    score = 0
+    score = NumericProperty(0)
     count = 0
 
     is_start = False
     is_invincible = True
 
-    def update_fps(self,dt):
+    player_label = ObjectProperty(None)
+
+    def update_fps(self, dt):
         self.fps = str(int(Clock.get_fps()))
         # if fps < 40:
         # self.remove_widget(self.enemies[0])
@@ -305,20 +322,35 @@ class GameWidget(Widget):
 
     def init_game(self):
         # start
-        # Clock.schedule_once(self.test, 3)
         self.is_start = True
         Clock.schedule_interval(self.update, 1.0 / 60.0)
         Clock.schedule_interval(self.update_fps, .1)
+        Clock.schedule_interval(self.test, 5)
+        Clock.schedule_once(self.test, 1)
+
 
         # re position player
         self.player.center = self.center
 
         # add enemy
-        for n in xrange(1):
+        for n in xrange(20):
             self.add_enemy()
         self.score = 0
 
-#     def test(self, *args):
+    def test(self, *args):
+        seed = random.randint(1, 4)
+        if seed == 1:
+            self.player.comment = "음 훠훠 난 피하기의 달인!"
+        elif seed == 2:
+            self.player.comment = "반갑군 친구들!"
+        elif seed == 3:
+            self.player.comment = "배고프다아~!"
+        elif seed == 4:
+            self.player.comment = "어짜피 테스트인걸!"
+        Clock.schedule_once(self.remove_player_label, 3)
+
+    def remove_player_label(self, *args):
+        self.player.comment = ""
 
 
     def update(self, dt):
@@ -372,8 +404,7 @@ class GameWidget(Widget):
                 app.root.current = "score screen"
                 Clock.unschedule(self.update)
                 Clock.unschedule(self.update_fps)
-                #self.clear_widgets()
-
+                # self.clear_widgets()
 
         # Score
         self.count += 1
@@ -383,7 +414,6 @@ class GameWidget(Widget):
             self.count = 0
             if self.score % 5 == 0:
                 self.add_enemy()
-
 
     def add_enemy(self):
         new_enemy = Enemy()
