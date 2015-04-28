@@ -31,6 +31,8 @@ from kivy.clock import Clock
 # random respon
 import random
 
+# i hate math
+from math import atan2, degrees
 
 #!/usr/bin/kivy
 __version__ = '1.0'
@@ -141,33 +143,42 @@ Builder.load_string('''
     size: enemy_image.size
     Image:
         id: enemy_image
-        source: 'data/girl.png'
+        source: 'data/girl32.png'
         pos: root.pos
+        size: 32, 32
 
 <Player>:
     size: player_image.size
     Image:
         id: player_image
-        source: 'data/boy.png'
+        source: 'data/boy64.png'
         pos: root.pos
+        size: 64, 64
+
 
 <GameWidget>:
     player: player
-    enemy: enemy
+    # enemy: enemy
 
     Player:
         id: player
         pos: root.center
         Label:
-            text: "%s" % self.parent.pos
+            text: "%s" % self.parent.size
             pos: self.parent.pos
+            size: self.parent.size
 
-    Enemy:
-        id: enemy
-        pos: root.center
-        Label:
-            text: "%s" % self.parent.pos
-            pos: self.parent.pos
+    Label:
+        text: "Score: %s" % root.score
+        pos: root.x, root.height-40
+        size: 100, 40
+
+    # Enemy:
+    #    id: enemy
+    #    pos: root.center
+    #    Label:
+    #        text: "%s" % self.parent.size
+    #        pos: self.parent.pos
 
 <GameScreen>:
     game_widget: game_widget
@@ -178,6 +189,7 @@ Builder.load_string('''
 
 
 class Player(Widget):
+    angle = NumericProperty(0)
     velocity_x = NumericProperty(0)
     velocity_y = NumericProperty(0)
     velocity = ReferenceListProperty(velocity_x, velocity_y)
@@ -196,9 +208,18 @@ class Enemy(Widget):
 
     def respon(self):
         """ 적의 위치를 새롭게 지정한다."""
-        self.velocity = randint(-4, 4), randint(-4, 4)
-        if velocity_x == 0 and velocity_y == 0:
-            velocity_x = 1
+        self.velocity = random.randint(-2, 2), random.randint(-2, 2)
+        if self.velocity_x == 0 and self.velocity_y == 0:
+            x = random.randint(1, 4)
+            if x == 1:
+                self.velocity_x = 1
+            elif x == 2:
+                self.velocity_x = -1
+            elif x == 3:
+                self.velocity_y = 1
+            elif x == 4:
+                self.velocity_y = -1
+
 
 class MenuScreen(Screen):
     pass
@@ -208,52 +229,82 @@ class CharacterScreen(Screen):
     pass
 
 
-class GameWidget(Widget):
-    enemy = ObjectProperty(None)
-    player = ObjectProperty(None)
+TIME_UP = 60
 
-    def init_game(self, vel=(4, 4)):
-        self.enemy.center = self.center
-        self.enemy.velocity = vel
+
+class GameWidget(Widget):
+    player = ObjectProperty(None)
+    enemies = ListProperty([])
+    score = NumericProperty(0)
+    count = 0
+
+    def init_game(self):
+        self.add_enemy()
 
     def update(self):
         """ 게임업데이트 """
         # 적의 이동
-        self.enemy.move()
+        for enemy in self.enemies:
+            enemy.move()
+            # 1. 리스폰 범위를 x축으로 벗어 나면 반대 쪽 x축에서 나온다.
+            # 2. 현재 위치를 파악해서 발사한다.
+            if self.width + enemy.width < enemy.x:
+                # 1. 내 위치를 지정한다.
+                enemy.x = self.x - enemy.width
+                enemy.y = random.randint(self.y, self.height)
 
-        # 1. 리스폰 범위를 x축으로 벗어 나면 반대 쪽 x축에서 나온다.
-        # 2. 현재 위치를 파악해서 발사한다.
-        if self.width+self.enemy.width < self.enemy.x:
-            # 1. 내 위치를 지정한다.
-            self.enemy.x = self.x - self.enemy.width
-            self.enemy.y = random.randint(self.y, self.height)
+                # 2. 내 위치와 플레이어의 위치로 향하도록 각도를 구한다.
+                degree = Vector(enemy.x, enemy.y).angle(
+                    (self.player.x, self.player.y))
 
-            # 2. 내 위치와 플레이어의 위치로 향하도록 각도를 구한다.
-            degree = Vector(self.enemy.x, self.enemy.y).angle((self.player.x, self.player.y))
+            elif self.height + enemy.height < enemy.y:
+                enemy.y = self.y - enemy.height
+                enemy.x = random.randint(self.x, self.width)
+            elif self.x - enemy.width > enemy.x:
+                enemy.x = self.width - enemy.x
+                enemy.y = random.randint(self.y, self.height)
+            elif self.y - enemy.height > enemy.y:
+                enemy.y = self.height - enemy.y
+                enemy.x = random.randint(self.x, self.width)
 
-            print degree
+        # 적군 생성
+        self.count += 1
+        if self.count > TIME_UP:
+            self.score += 1
+            self.add_enemy()
+            self.count = 0
 
+    def add_enemy(self):
+        new_enemy = Enemy()
+        new_enemy.respon()
+        self.add_widget(new_enemy)
+        self.enemies = self.enemies + [new_enemy]
 
-        elif self.height+self.enemy.height < self.enemy.y:
-            self.enemy.y = self.y - self.enemy.height
-            self.enemy.x = random.randint(self.x, self.width)
-        elif self.x-self.enemy.width > self.enemy.x:
-            self.enemy.x = self.width - self.enemy.x
-            self.enemy.y = random.randint(self.y, self.height)
-        elif self.y-self.enemy.height > self.enemy.y:
-            self.enemy.y = self.height - self.enemy.y
-            self.enemy.x = random.randint(self.x, self.width)
+    def on_touch_down(self, touch):
+        Animation.cancel_all(self.player)
+        angle = degrees(atan2(touch.y - self.player.center_y,
+                              touch.x - self.player.center_x))
+        Animation(center=touch.pos, angle=self.player.angle).start(self.player)
+
+    def on_touch_down(self, touch):
+        Animation.cancel_all(self.player)
+        angle = degrees(atan2(touch.y - self.player.center_y,
+                              touch.x - self.player.center_x))
+        Animation(center=touch.pos, angle=self.player.angle).start(self.player)
 
 
 class GameScreen(Screen):
     game_widget = ObjectProperty(None)
+
     def on_enter(self):
         self.game_widget.init_game()
 
     def update(self, dt):
         self.game_widget.update()
 
+
 class GameApp(App):
+
     """ app만 관리"""
     game = None
 
