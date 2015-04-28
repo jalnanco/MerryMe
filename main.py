@@ -31,15 +31,12 @@ from kivy.clock import Clock
 # random respon
 import random
 
-# i hate math
-from math import atan2, degrees
-
 #!/usr/bin/kivy
 __version__ = '1.0'
 
 # app을 글로벌로 사용
 from kivy.app import App
-# app = None
+app = None
 
 # 여기에 kivy파일을 추가함 - 그림파일 불러오기용
 Builder.load_string('''
@@ -50,6 +47,47 @@ Builder.load_string('''
             rectangle: self.x+1,self.y+1,self.width-1,self.height-1
             dash_offset: 2
             dash_length: 3
+
+<ScoreScreen>:
+    BoxLayout:
+        pos: root.pos
+        size: root.size
+        padding: '10dp'
+        spacing: '10dp'
+        # orientation: 'vertical' if self.height > self.width else 'horizontal'
+        canvas:
+            Color:
+                rgb: 218/255., 204/255., 175/255., 1
+            # BackGroundColor
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        BoxLayout:
+            size_hint_x:0.1
+        BoxLayout:
+            size_hint_x:0.2
+            orientation: 'vertical' if self.height > self.width else 'horizontal'
+            BoxLayout:
+            Label:
+                text: "%s" % root.score
+                font_size: 30
+                font_name: 'data/NanumGothic.ttf'
+            Button:
+                text: 'Re Start'
+                background_color: 122/255., 101/255., 54/255., 1
+                font_name: 'data/NanumGothic.ttf'
+                size_hint_y:0.2
+                on_press: root.manager.transition = WipeTransition(); root.manager.current = 'character screen'
+            BoxLayout:
+                size_hint_y:0.1
+            Button:
+                text: 'End'
+                background_color: 122/255., 101/255., 54/255., 1
+                font_name: 'data/NanumGothic.ttf'
+                size_hint_y:0.2
+            BoxLayout:
+        BoxLayout:
+            size_hint_x:0.1
 
 <MenuScreen>:
     BoxLayout:
@@ -143,9 +181,9 @@ Builder.load_string('''
     size: enemy_image.size
     Image:
         id: enemy_image
-        source: 'data/girl32.png'
+        source: 'data/girl64.png'
         pos: root.pos
-        size: 32, 32
+        size: 64, 64
 
 <Player>:
     size: player_image.size
@@ -162,15 +200,20 @@ Builder.load_string('''
 
     Player:
         id: player
-        pos: root.center
+        # pos: root.center
         Label:
-            text: "%s" % self.parent.size
+            # text: "%s" % self.parent.size
             pos: self.parent.pos
             size: self.parent.size
 
     Label:
         text: "Score: %s" % root.score
         pos: root.x, root.height-40
+        size: 100, 40
+
+    Label:
+        text: 'FPS: ' + root.fps if root.fps != None else 'FPS:'
+        pos: root.x, root.height-80
         size: 100, 40
 
     # Enemy:
@@ -189,22 +232,22 @@ Builder.load_string('''
 
 
 class Player(Widget):
-    angle = NumericProperty(0)
-    velocity_x = NumericProperty(0)
-    velocity_y = NumericProperty(0)
-    velocity = ReferenceListProperty(velocity_x, velocity_y)
+    velocity_x = 0
+    velocity_y = 0
+    velocity = [0, 0]
 
     def move(self):
-        self.pos = Vector(*self.velocity) + self.pos
+        self.center = Vector(*self.velocity) + self.center
 
 
 class Enemy(Widget):
-    velocity_x = NumericProperty(0)
-    velocity_y = NumericProperty(0)
-    velocity = ReferenceListProperty(velocity_x, velocity_y)
+    velocity_x = 0
+    velocity_y = 0
+    velocity = [0, 0]
+    speed = 2
 
     def move(self):
-        self.pos = Vector(*self.velocity) + self.pos
+        self.center = Vector(*self.velocity) + self.center
 
     def respon(self):
         """ 적의 위치를 새롭게 지정한다."""
@@ -219,6 +262,7 @@ class Enemy(Widget):
                 self.velocity_y = 1
             elif x == 4:
                 self.velocity_y = -1
+        self.speed = random.randint(1, 4)
 
 
 class MenuScreen(Screen):
@@ -229,50 +273,117 @@ class CharacterScreen(Screen):
     pass
 
 
+class ScoreScreen(Screen):
+    score = 0
+
+    def on_enter(self):
+        self.score = app.last_score
+    pass
+
+
 TIME_UP = 60
 
 
 class GameWidget(Widget):
-    player = ObjectProperty(None)
-    enemies = ListProperty([])
-    score = NumericProperty(0)
+    fps = StringProperty(None)
+    player = None
+    enemies = []
+    score = 0
     count = 0
 
-    def init_game(self):
-        self.add_enemy()
+    is_start = False
+    is_invincible = True
 
-    def update(self):
+    def update_fps(self,dt):
+        self.fps = str(int(Clock.get_fps()))
+        # if fps < 40:
+        # self.remove_widget(self.enemies[0])
+        # self.enemies.remove(self.enemies[0])
+        # print "ddd", len(self.enemies)
+        # self.enemies[-1].width += 10
+        #self.enemies[-1].height += 10
+
+    def init_game(self):
+        # start
+        # Clock.schedule_once(self.test, 3)
+        self.is_start = True
+        Clock.schedule_interval(self.update, 1.0 / 60.0)
+        Clock.schedule_interval(self.update_fps, .1)
+
+        # re position player
+        self.player.center = self.center
+
+        # add enemy
+        for n in xrange(1):
+            self.add_enemy()
+        self.score = 0
+
+#     def test(self, *args):
+
+
+    def update(self, dt):
         """ 게임업데이트 """
-        # 적의 이동
+        if not self.is_start:
+            return
+
+        # Player's Move
+        self.player.move()
+
+        # Enemy's Move
         for enemy in self.enemies:
             enemy.move()
             # 1. 리스폰 범위를 x축으로 벗어 나면 반대 쪽 x축에서 나온다.
             # 2. 현재 위치를 파악해서 발사한다.
-            if self.width + enemy.width < enemy.x:
-                # 1. 내 위치를 지정한다.
-                enemy.x = self.x - enemy.width
-                enemy.y = random.randint(self.y, self.height)
+            is_out = False
 
-                # 2. 내 위치와 플레이어의 위치로 향하도록 각도를 구한다.
-                degree = Vector(enemy.x, enemy.y).angle(
-                    (self.player.x, self.player.y))
+            if self.width + enemy.width < enemy.center_x:
+                enemy.center_x = self.x - enemy.width
+                enemy.center_y = random.randint(self.y, self.height)
+                is_out = True
+            elif self.height + enemy.height < enemy.center_y:
+                enemy.center_y = self.y - enemy.height
+                enemy.center_x = random.randint(self.x, self.width)
+                is_out = True
+            elif self.x - enemy.width > enemy.center_x:
+                enemy.center_x = self.width - enemy.center_x
+                enemy.center_y = random.randint(self.y, self.height)
+                is_out = True
+            elif self.y - enemy.height > enemy.center_y:
+                enemy.center_y = self.height - enemy.center_y
+                enemy.center_x = random.randint(self.x, self.width)
+                is_out = True
+            if is_out:
+                # Chase player
+                v = Vector(self.player.center) - Vector(enemy.center)
+                v = v.normalize()
+                v *= enemy.speed
+                enemy.velocity = v
 
-            elif self.height + enemy.height < enemy.y:
-                enemy.y = self.y - enemy.height
-                enemy.x = random.randint(self.x, self.width)
-            elif self.x - enemy.width > enemy.x:
-                enemy.x = self.width - enemy.x
-                enemy.y = random.randint(self.y, self.height)
-            elif self.y - enemy.height > enemy.y:
-                enemy.y = self.height - enemy.y
-                enemy.x = random.randint(self.x, self.width)
+            # GameOver
+            if self.player.collide_widget(enemy):
+                print "hit enemy id: %s" % enemy.uid
+                self.is_start = False
+                # delete enemies
+                for e in self.enemies:
+                    e.center = [10, 10]
+                    self.remove_widget(e)
+                    self.enemies = []
+                app.last_score = self.score
+                app.root.current = "score screen"
+                Clock.unschedule(self.update)
+                Clock.unschedule(self.update_fps)
+                #self.clear_widgets()
 
-        # 적군 생성
+
+        # Score
         self.count += 1
         if self.count > TIME_UP:
             self.score += 1
-            self.add_enemy()
+            # self.add_enemy()
             self.count = 0
+            if self.score % 5 == 0:
+                self.add_enemy()
+
 
     def add_enemy(self):
         new_enemy = Enemy()
@@ -281,16 +392,19 @@ class GameWidget(Widget):
         self.enemies = self.enemies + [new_enemy]
 
     def on_touch_down(self, touch):
-        Animation.cancel_all(self.player)
-        angle = degrees(atan2(touch.y - self.player.center_y,
-                              touch.x - self.player.center_x))
-        Animation(center=touch.pos, angle=self.player.angle).start(self.player)
+        self.add_value(touch)
 
-    def on_touch_down(self, touch):
-        Animation.cancel_all(self.player)
-        angle = degrees(atan2(touch.y - self.player.center_y,
-                              touch.x - self.player.center_x))
-        Animation(center=touch.pos, angle=self.player.angle).start(self.player)
+    def on_touch_move(self, touch):
+        self.add_value(touch)
+
+    def add_value(self, touch):
+        v = Vector(touch.x, touch.y) - Vector(self.player.center)
+        v = v.normalize()
+        v *= 4
+        self.player.velocity = v
+
+    def on_touch_up(self, touch):
+        self.player.velocity = [0, 0]
 
 
 class GameScreen(Screen):
@@ -299,29 +413,25 @@ class GameScreen(Screen):
     def on_enter(self):
         self.game_widget.init_game()
 
-    def update(self, dt):
-        self.game_widget.update()
-
 
 class GameApp(App):
 
     """ app만 관리"""
     game = None
+    last_score = 0
 
     def build(self):
-        # global app
-        # app = self
+        global app
+        app = self
         self.title = 'MarryMe'
 
         root = ScreenManager()
         root.add_widget(MenuScreen(name='menu screen'))
         root.add_widget(CharacterScreen(name='character screen'))
+        root.add_widget(ScoreScreen(name='score screen'))
 
         game = GameScreen(name='game screen')
         root.add_widget(game)
-
-        Clock.schedule_interval(game.update, 1.0 / 60.0)
-
         return root
 
 if __name__ in ('__main__', '__android__'):
