@@ -182,42 +182,59 @@ Builder.load_string('''
         BoxLayout:
             size_hint_x:0.1
 
-<Enemy>:
-    size: enemy_image.width/2, enemy_image.height/2
+<Brick>:
+    size: brick_image.width, brick_image.height
     center: root.center
     Image:
-        id: enemy_image
-        source: 'data/girl64.png'
+        id: brick_image
+        source: 'data/boxCrate_double.png'
+        center: root.center
+        size: 64, 64
+<Sign>:
+    size: brick_image.width, brick_image.height
+    center: root.center
+    Image:
+        id: brick_image
+        source: 'data/signRight.png'
+        center: root.center
+        size: 64, 64
+<Monster>:
+    size: brick_image.width, brick_image.height
+    center: root.center
+    Image:
+        id: brick_image
+        source: 'data/spinner.png'
         center: root.center
         size: 64, 64
 
+
 <Princess>:
-    size: player_image.width/2, player_image.height/2
+    size: player_image.width, player_image.height
     Image:
         id: player_image
         source: 'data/girl64.png'
         center: root.center
         size: 64, 64
-    Label:
-        text: root.comment
-        size: 200, 20,
-        pos: root.x - 15, root.center_y + 30
-        font_size: 15
-        font_name: 'data/NanumGothic.ttf'
+    # Label:
+    #    text: root.comment
+    #    size: 200, 20,
+    #    pos: root.x - 15, root.center_y + 30
+    #    font_size: 15
+    #    font_name: 'data/NanumGothic.ttf'
 
 <Knight>:
-    size: player_image.width/2, player_image.height/2
+    size: player_image.width, player_image.height
     Image:
         id: player_image
         source: 'data/boy64.png'
         center: root.center
         size: 64, 64
-    Label:
-        text: root.comment
-        size: 200, 20,
-        pos: root.x - 15, root.center_y + 30
-        font_size: 15
-        font_name: 'data/NanumGothic.ttf'
+    # Label:
+    #    text: root.comment
+    #    size: 200, 20,
+    #    pos: root.x - 15, root.center_y + 30
+    #    font_size: 15
+    #    font_name: 'data/NanumGothic.ttf'
 
 <GameWidget>:
     princess: princess
@@ -254,17 +271,17 @@ Builder.load_string('''
     Princess:
         id: princess
         # pos: root.center
-        Label:
-            # text: "%s" % self.parent.size
-            pos: self.parent.pos
-            size: self.parent.size
+        # Label:
+        #    # text: "%s" % self.parent.size
+        #    pos: self.parent.pos
+        #    size: self.parent.size
     Knight:
         id: knight
         # pos: root.center
-        Label:
-            # text: "%s" % self.parent.size
-            pos: self.parent.pos
-            size: self.parent.size
+        # Label:
+        #    # text: "%s" % self.parent.size
+        #    pos: self.parent.pos
+        #    size: self.parent.size
 
     Label:
         text: "Score: %s" % root.score
@@ -291,7 +308,8 @@ Builder.load_string('''
 # GameScreen
 <GameScreen>:
     game_widget: game_widget
-    control_widget: control_widget
+    control_widget_a: control_widget_a
+    control_widget_b: control_widget_b
     left_button: left_button
     right_button: right_button
     a_button: a_button
@@ -303,30 +321,33 @@ Builder.load_string('''
         GameWidget:
             size_hint_y:0.7
             id: game_widget
-        ControlWidget:
-            id: control_widget
+        BoxLayout:
+            orientation: 'horizontal'
             size_hint_y:0.3
-            Image:
-                id: left_button
-                pos: root.x + 50 , root.y+50
-                size: 100, 100
-                source: 'data/lineDark19.png'
-            Image:
-                id: right_button
-                size: 100, 100
-                pos: root.x+200, root.y+50
-                source: 'data/lineDark20.png'
-            Image:
-                id: a_button
-                size: 100, 100
-                pos: root.width-150, root.y+50
-                source: 'data/lineDark32.png'
-            Image:
-                id: b_button
-                size: 100, 100
-                pos: root.width-300, root.y+50
-                source: 'data/lineDark31.png'
-
+            ControlWidget:
+                id: control_widget_a
+                Image:
+                    id: left_button
+                    center: self.parent.x + self.width + 25, self.parent.center_y
+                    size: 100, 100
+                    source: 'data/lineDark19.png'
+                Image:
+                    id: right_button
+                    size: 100, 100
+                    center: self.parent.x + self.width + 175, self.parent.center_y
+                    source: 'data/lineDark20.png'
+            ControlWidget:
+                id: control_widget_b
+                Image:
+                    id: a_button
+                    size: 100, 100
+                    center: root.width - self.width - 25, self.parent.center_y
+                    source: 'data/lineDark32.png'
+                Image:
+                    id: b_button
+                    size: 100, 100
+                    center: root.width - self.width - 175, self.parent.center_y
+                    source: 'data/lineDark31.png'
 ''')
 
 
@@ -339,6 +360,9 @@ class Princess(Widget):
     def move(self):
         self.center = Vector(*self.velocity) + self.center
 
+    def stop(self):
+        self.velocity = [0, 0]
+
 
 class Knight(Widget):
     velocity_x = 0
@@ -349,30 +373,42 @@ class Knight(Widget):
     def move(self):
         self.center = Vector(*self.velocity) + self.center
 
+    # def stop(self):
+    #     self.velocity = [0, 0]
 
-class Enemy(Widget):
-    velocity_x = 0
-    velocity_y = 0
-    velocity = [0, 0]
-    speed = 2
 
-    def move(self):
-        self.center = Vector(*self.velocity) + self.center
+class Brick(Widget):
+    pass
 
-    def respon(self):
-        """ 적의 위치를 새롭게 지정한다."""
-        self.velocity = random.randint(-2, 2), random.randint(-2, 2)
-        if self.velocity_x == 0 and self.velocity_y == 0:
-            x = random.randint(1, 4)
-            if x == 1:
-                self.velocity_x = 1
-            elif x == 2:
-                self.velocity_x = -1
-            elif x == 3:
-                self.velocity_y = 1
-            elif x == 4:
-                self.velocity_y = -1
-        self.speed = random.randint(1, 4)
+
+class Sign(Widget):
+    pass
+
+
+class Monster(Widget):
+    pass
+    # velocity_x = 0
+    # velocity_y = 0
+    # velocity = [0, 0]
+    # speed = 2
+
+    # def move(self):
+    #     self.center = Vector(*self.velocity) + self.center
+
+    # def respon(self):
+    #     """ 적의 위치를 새롭게 지정한다."""
+    #     self.velocity = random.randint(-2, 2), random.randint(-2, 2)
+    #     if self.velocity_x == 0 and self.velocity_y == 0:
+    #         x = random.randint(1, 4)
+    #         if x == 1:
+    #             self.velocity_x = 1
+    #         elif x == 2:
+    #             self.velocity_x = -1
+    #         elif x == 3:
+    #             self.velocity_y = 1
+    #         elif x == 4:
+    #             self.velocity_y = -1
+    #     self.speed = random.randint(1, 4)
 
 
 class MenuScreen(Screen):
@@ -398,27 +434,42 @@ class ControlWidget(Widget):
     pass
 
 
+# BOX - 64 x 64
+STAGE1_BRICKS = [[200, 0], [264, 0], [328, 0],
+                 [392, 64], [456, 64], [520, 64],
+                 [584, 64], [264, 128], [328, 128],
+                 [584, 128], [392, 256], [328, 192],
+                 [456, 256], [520, 256], [328, 192]]
+STAGE1_SIGNS = [[100, 0]]
+STAGE1_MONSTER = []
+
+
 class GameWidget(Widget):
     fps = StringProperty(None)
     princess = None
     knight = None
 
-    enemies = []
+    bricks = []
+    signs = []
+    monsters = []
     score = NumericProperty(0)
     count = 0
 
     is_start = False
     is_invincible = True
 
+    # Princess's Move
     is_touch = False
     touch = None
 
+    # Knight's Move
     is_key_down = False
     is_jumping = False
+    is_ycoll = False
 
     player_label = ObjectProperty(None)
-
-    control_widget = None
+    control_widget_a = None
+    control_widget_b = None
 
     def update_fps(self, dt):
         self.fps = str(int(Clock.get_fps()))
@@ -427,24 +478,23 @@ class GameWidget(Widget):
         # self.enemies.remove(self.enemies[0])
         # print "ddd", len(self.enemies)
         # self.enemies[-1].width += 10
-        #self.enemies[-1].height += 10
+        # self.enemies[-1].height += 10
 
-    def init_game(self):
+    def init_game(self, ca, cb):
         # start
         self.is_start = True
         Clock.schedule_interval(self.update, 1.0 / 60.0)
         Clock.schedule_interval(self.update_fps, .1)
-        Clock.schedule_interval(self.test, 5)
-        Clock.schedule_once(self.test, 1)
+        # Clock.schedule_interval(self.test, 5)
+        # Clock.schedule_once(self.test, 1)
         Clock.schedule_interval(self.txupdate, 0)
 
         # re position princess
-        self.princess.center = self.center
-        self.knight.center = 500, 500
+        self.princess.pos = [self.width - self.princess.width - 20, self.y]
+        self.knight.pos = [self.x + 20, self.y]
 
-        # add enemy
-        for n in xrange(0):
-            self.add_enemy()
+        # bring stage
+        self.bring_stage1()
         self.score = 0
 
         # map init
@@ -452,22 +502,48 @@ class GameWidget(Widget):
             texture = CoreImage('data/starBackground.png').texture
             texture.wrap = 'repeat'
             self.rect_1 = Rectangle(
-               texture=texture, size=self.size, pos=self.pos)
+                texture=texture, size=self.size, pos=self.pos)
 
-    def test(self, *args):
-        seed = random.randint(1, 4)
-        if seed == 1:
-            self.princess.comment = "음 훠훠 난 피하기의 달인!"
-        elif seed == 2:
-            self.princess.comment = "반갑군 친구들!"
-        elif seed == 3:
-            self.princess.comment = "배고프다아~!"
-        elif seed == 4:
-            self.princess.comment = "어짜피 테스트인걸!"
-        Clock.schedule_once(self.remove_player_label, 3)
+        # controller
+        self.control_widget_a = ca
+        self.control_widget_b = cb
 
-    def remove_player_label(self, *args):
-        self.princess.comment = ""
+    # def test(self, *args):
+    #    seed = random.randint(1, 4)
+    #    if seed == 1:
+    #        self.princess.comment = "언제쯤 오시나요"
+    #    elif seed == 2:
+    #        self.princess.comment = "약속시간이 꽤 지났는데"
+    #    elif seed == 3:
+    #        self.princess.comment = "소개팅남은 언제오시는 걸까요?"
+    #    elif seed == 4:
+    #        self.princess.comment = "집에 가야되나"
+    #    Clock.schedule_once(self.remove_player_label, 3)
+
+    # def remove_player_label(self, *args):
+    #     self.princess.comment = ""
+
+    def knight_x_collision(self, brick):
+
+        print self.knight.x, brick.x
+
+        if self.knight.x < brick.x:
+            self.knight.x = brick.x - self.knight.width - 1
+        else:
+            self.knight.x = brick.x + brick.width + 1
+
+        # print self.knight.y, self.knight.height, brick.y, brick.height, brick.size
+        # if self.knight.y == brick.y + brick.height:
+        #     print 1111
+        self.knight.velocity[0] = 0
+
+    def knight_y_collision(self, brick):
+        if self.knight.y > brick.y:
+            self.knight.y = brick.y + brick.height
+            self.is_jumping = False
+            self.is_ycoll = True
+        else:
+            self.knight.y = brick.y - self.knight.height
 
     def update(self, dt):
         """ 게임업데이트 """
@@ -479,56 +555,82 @@ class GameWidget(Widget):
             self.princess.move()
             self.on_touch_down(self.touch)
 
-#        if self.is_key_down:
+        self.is_ycoll = False
+
+        # Knight's Move
+        for brick in self.bricks:
+            if self.knight.collide_widget(brick):
+                z = Vector(self.knight.center) - Vector(brick.center)
+                # check y
+                print z.normalize()[0]
+                if -0.71 < z.normalize()[0] < 0.71:
+                    self.knight_y_collision(brick)
+                else:
+                    # check x
+                    self.knight_x_collision(brick)
+
         self.knight.move()
 
-        # Enemy's Move
-        for enemy in self.enemies:
-            enemy.move()
-            # 1. 리스폰 범위를 x축으로 벗어 나면 반대 쪽 x축에서 나온다.
-            # 2. 현재 위치를 파악해서 발사한다.
-            is_out = False
+        # y 충돌이면 떨어지지 않는다. // 표면보다 같거나 낮으면 떨어지지 않는다.
+        if not self.is_ycoll and not self.knight.y <= self.y:
+            self.knight.y -= 5.0
 
-            if self.width + enemy.width < enemy.center_x:
-                enemy.center_x = self.x - enemy.width
-                enemy.center_y = random.randint(self.y, self.height)
-                is_out = True
-            elif self.height + enemy.height < enemy.center_y:
-                enemy.center_y = self.y - enemy.height
-                enemy.center_x = random.randint(self.x, self.width)
-                is_out = True
-            elif self.x - enemy.width > enemy.center_x:
-                enemy.center_x = self.width - enemy.center_x
-                enemy.center_y = random.randint(self.y, self.height)
-                is_out = True
-            elif self.y - enemy.height > enemy.center_y:
-                enemy.center_y = self.height - enemy.center_y
-                enemy.center_x = random.randint(self.x, self.width)
-                is_out = True
-            if is_out:
-                # Chase princess
-                v = Vector(self.princess.center) - Vector(enemy.center)
-                v = v.normalize()
-                v *= enemy.speed
-                enemy.velocity = v
+        # floor
+        if self.knight.y < self.y and self.is_jumping:
+            self.is_jumping = False
+            self.knight.y = self.y
 
-            # GameOver
-            if self.princess.collide_widget(enemy):
-                print "hit enemy id: %s" % enemy.uid
-                self.is_start = False
-                # delete enemies
-                for e in self.enemies:
-                    e.center = [10, 10]
-                    self.remove_widget(e)
-                    self.enemies = []
-                app.last_score = self.score
-                app.root.current = "score screen"
-                Clock.unschedule(self.update)
-                Clock.unschedule(self.update_fps)
-                # self.clear_widgets()
+        # Map change
+        if self.knight.center_x > self.width:
+            self.knight.pos = [self.x + 20, self.y]
+
+        # Brick's Move
+        # for enemy in self.enemies:
+        #     enemy.move()
+        #     # 1. 리스폰 범위를 x축으로 벗어 나면 반대 쪽 x축에서 나온다.
+        #     # 2. 현재 위치를 파악해서 발사한다.
+        #     is_out = False
+
+        #     if self.width + enemy.width < enemy.center_x:
+        #         enemy.center_x = self.x - enemy.width
+        #         enemy.center_y = random.randint(self.y, self.height)
+        #         is_out = True
+        #     elif self.height + enemy.height < enemy.center_y:
+        #         enemy.center_y = self.y - enemy.height
+        #         enemy.center_x = random.randint(self.x, self.width)
+        #         is_out = True
+        #     elif self.x - enemy.width > enemy.center_x:
+        #         enemy.center_x = self.width - enemy.center_x
+        #         enemy.center_y = random.randint(self.y, self.height)
+        #         is_out = True
+        #     elif self.y - enemy.height > enemy.center_y:
+        #         enemy.center_y = self.height - enemy.center_y
+        #         enemy.center_x = random.randint(self.x, self.width)
+        #         is_out = True
+        #     if is_out:
+        #         # Chase princess
+        #         v = Vector(self.princess.center) - Vector(enemy.center)
+        #         v = v.normalize()
+        #         v *= enemy.speed
+        #         enemy.velocity = v
+
+        #     # GameOver
+        #     if self.princess.collide_widget(enemy):
+        #         print "hit enemy id: %s" % enemy.uid
+        #         self.is_start = False
+        #         # delete enemies
+        #         for e in self.enemies:
+        #             e.center = [10, 10]
+        #             self.remove_widget(e)
+        #             self.enemies = []
+        #         app.last_score = self.score
+        #         app.root.current = "score screen"
+        #         Clock.unschedule(self.update)
+        #         Clock.unschedule(self.update_fps)
+            # self.clear_widgets()
 
         # Score
-        #self.count += 1
+        # self.count += 1
         # if self.count > TIME_UP:
         #    self.score += 1
         #    # self.add_enemy()
@@ -536,11 +638,25 @@ class GameWidget(Widget):
         #    if self.score % 5 == 0:
         #        self.add_enemy()
 
-    def add_enemy(self):
-        new_enemy = Enemy()
-        new_enemy.respon()
-        self.add_widget(new_enemy)
-        self.enemies = self.enemies + [new_enemy]
+#    def add_enemy(self):
+#        new_brick = Brick()
+#        # new_brick.respon()
+#        self.add_widget(new_brick)
+#        self.bricks = self.bricks + [new_brick]
+
+    def bring_stage1(self):
+        for pos in STAGE1_BRICKS:
+            new_brick = Brick()
+            new_brick.x = self.x + pos[0]
+            new_brick.y = self.y + pos[1]
+            self.add_widget(new_brick)
+            self.bricks = self.bricks + [new_brick]
+        for pos in STAGE1_SIGNS:
+            new_sign = Sign()
+            new_sign.x = self.x + pos[0]
+            new_sign.y = self.y + pos[1]
+            self.add_widget(new_sign)
+            self.signs = self.signs + [new_sign]
 
     # Control
     def on_touch_down(self, touch):
@@ -559,9 +675,15 @@ class GameWidget(Widget):
 
         # Knight Move
         if app.game.left_button.collide_point(*touch.pos):
+            print "111"
             self.knight.velocity = [-3, 0]
+            self.is_key_down = True
+            touch.grab(self)
         if app.game.right_button.collide_point(*touch.pos):
+            print "222"
             self.knight.velocity = [3, 0]
+            self.is_key_down = True
+            touch.grab(self)
         if app.game.a_button.collide_point(*touch.pos):
             self.knight_jump()
         if app.game.b_button.collide_point(*touch.pos):
@@ -572,10 +694,21 @@ class GameWidget(Widget):
             self.is_touch = False
             self.princess.velocity = [0, 0]
 
-        if app.game.left_button.collide_point(*touch.pos):
+        # if app.game.left_button.collide_point(*touch.pos):
+        #     self.knight.velocity = [0, 0]
+        # if app.game.right_button.collide_point(*touch.pos):
+        #     self.knight.velocity = [0, 0]
+        if self.control_widget_a.collide_point(*touch.pos) & self.is_key_down:
             self.knight.velocity = [0, 0]
-        if app.game.right_button.collide_point(*touch.pos):
-            self.knight.velocity = [0, 0]
+            self.is_key_down = False
+            touch.ungrab(self)
+
+    def on_touch_move(self, touch):
+        if touch.grab_current is self:
+            if not self.control_widget_a.collide_point(*touch.pos):
+                self.knight.velocity = [0, 0]
+                self.is_key_down = False
+                touch.ungrab(self)
 
     # Jump
     def knight_jump(self):
@@ -588,31 +721,24 @@ class GameWidget(Widget):
 
     def knight_jump_high(self, dt):
         Clock.unschedule(self.up)
-        Clock.schedule_once(self.knight_jump_done, 0.2)
-        Clock.schedule_interval(self.down, 1.0 / 60.0)
-
-    def knight_jump_done(self, dt):
-        Clock.unschedule(self.down)
-        self.is_jumping = False
 
     def up(self, dt):
-        self.knight.y += 5.0
-
-    def down(self, dt):
-        self.knight.y -= 5.0
+        self.knight.y += 14.0
 
     # Background Control
     def txupdate(self, *l):
         t = Clock.get_boottime()
         v = 0.1
         ratio = round(self.width / self.height, 1)
-        self.rect_1.tex_coords = -(t * v), 0, -(t * v + ratio), 0,  -(t * v + ratio), -1, -(t * v), -1
-
+        self.rect_1.tex_coords = - \
+            (t * v), 0, -(t * v + ratio), 0,  - \
+            (t * v + ratio), -1, -(t * v), -1
 
 
 class GameScreen(Screen):
     game_widget = ObjectProperty(None)
-    control_widget = ObjectProperty(None)
+    control_widget_a = ObjectProperty(None)
+    control_widget_b = ObjectProperty(None)
 
     left_button = None
     right_button = None
@@ -620,7 +746,8 @@ class GameScreen(Screen):
     b_button = None
 
     def on_enter(self):
-        self.game_widget.init_game()
+        self.game_widget.init_game(
+            self.control_widget_a, self.control_widget_b)
 
 
 class GameApp(App):
