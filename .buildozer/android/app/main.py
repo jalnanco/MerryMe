@@ -215,7 +215,7 @@ Builder.load_string('''
         source: 'data/girl64.png'
         center: root.center
         size: 64, 64
-    #Label:
+    # Label:
     #    text: root.comment
     #    size: 200, 20,
     #    pos: root.x - 15, root.center_y + 30
@@ -229,7 +229,7 @@ Builder.load_string('''
         source: 'data/boy64.png'
         center: root.center
         size: 64, 64
-    #Label:
+    # Label:
     #    text: root.comment
     #    size: 200, 20,
     #    pos: root.x - 15, root.center_y + 30
@@ -271,7 +271,7 @@ Builder.load_string('''
     Princess:
         id: princess
         # pos: root.center
-        #Label:
+        # Label:
         #    # text: "%s" % self.parent.size
         #    pos: self.parent.pos
         #    size: self.parent.size
@@ -373,8 +373,8 @@ class Knight(Widget):
     def move(self):
         self.center = Vector(*self.velocity) + self.center
 
-    def stop(self):
-        self.velocity = [0, 0]
+    # def stop(self):
+    #     self.velocity = [0, 0]
 
 
 class Brick(Widget):
@@ -435,7 +435,7 @@ class ControlWidget(Widget):
 
 
 # BOX - 64 x 64
-STAGE1_BRICKS = [[200, 64], [264, 64], [328, 64],
+STAGE1_BRICKS = [[200, 0], [264, 0], [328, 0],
                  [392, 64], [456, 64], [520, 64],
                  [584, 64], [264, 128], [328, 128],
                  [584, 128], [392, 256], [328, 192],
@@ -465,6 +465,7 @@ class GameWidget(Widget):
     # Knight's Move
     is_key_down = False
     is_jumping = False
+    is_ycoll = False
 
     player_label = ObjectProperty(None)
     control_widget_a = None
@@ -477,7 +478,7 @@ class GameWidget(Widget):
         # self.enemies.remove(self.enemies[0])
         # print "ddd", len(self.enemies)
         # self.enemies[-1].width += 10
-        #self.enemies[-1].height += 10
+        # self.enemies[-1].height += 10
 
     def init_game(self, ca, cb):
         # start
@@ -523,20 +524,26 @@ class GameWidget(Widget):
     #     self.princess.comment = ""
 
     def knight_x_collision(self, brick):
-        # x collisions
+
+        print self.knight.x, brick.x
+
         if self.knight.x < brick.x:
-            if self.knight.velocity[0] > 0:
-                # self.knight.velocity[0] = 0
-                self.knight.x = brick.x - self.knight.width
+            self.knight.x = brick.x - self.knight.width - 1
         else:
-            if self.knight.velocity[0] < 0:
-                # self.knight.velocity[0] = 0
-                self.knight.x = brick.x + brick.width
+            self.knight.x = brick.x + brick.width + 1
+
+        # print self.knight.y, self.knight.height, brick.y, brick.height, brick.size
+        # if self.knight.y == brick.y + brick.height:
+        #     print 1111
+        self.knight.velocity[0] = 0
 
     def knight_y_collision(self, brick):
         if self.knight.y > brick.y:
             self.knight.y = brick.y + brick.height
             self.is_jumping = False
+            self.is_ycoll = True
+        else:
+            self.knight.y = brick.y - self.knight.height
 
     def update(self, dt):
         """ 게임업데이트 """
@@ -548,26 +555,30 @@ class GameWidget(Widget):
             self.princess.move()
             self.on_touch_down(self.touch)
 
-        # Knight's Move
+        self.is_ycoll = False
 
+        # Knight's Move
         for brick in self.bricks:
             if self.knight.collide_widget(brick):
-
-                # which face
                 z = Vector(self.knight.center) - Vector(brick.center)
+                # check y
                 print z.normalize()[0]
                 if -0.71 < z.normalize()[0] < 0.71:
                     self.knight_y_collision(brick)
                 else:
-                    # if self.knight.velocity[0] != 0:
+                    # check x
                     self.knight_x_collision(brick)
+
         self.knight.move()
 
-        # Gravity
-        if self.knight.y > self.y:
+        # y 충돌이면 떨어지지 않는다. // 표면보다 같거나 낮으면 떨어지지 않는다.
+        if not self.is_ycoll and not self.knight.y <= self.y:
             self.knight.y -= 5.0
-        else:
+
+        # floor
+        if self.knight.y < self.y and self.is_jumping:
             self.is_jumping = False
+            self.knight.y = self.y
 
         # Map change
         if self.knight.center_x > self.width:
@@ -619,7 +630,7 @@ class GameWidget(Widget):
             # self.clear_widgets()
 
         # Score
-        #self.count += 1
+        # self.count += 1
         # if self.count > TIME_UP:
         #    self.score += 1
         #    # self.add_enemy()
