@@ -261,29 +261,7 @@ Builder.load_string('''
     princess: princess
     knight: knight
     background_widget: background_widget
-    # enemy: enemy
 
-    # Image:
-    #     id: background_image
-    #     source: 'data/starBackground.png'
-    #     pos: self.parent.x, self.parent.y
-    #     size: self.parent.width/3, self.parent.height
-    #     allow_stretch: True
-    #     keep_ratio: False
-    # Image:
-    #     id: background_image
-    #     source: 'data/starBackground.png'
-    #     pos: self.parent.width* 1/3, self.parent.y
-    #     size: self.parent.width/3, self.parent.height
-    #     allow_stretch: True
-    #     keep_ratio: False
-    # Image:
-    #     id: background_image
-    #     source: 'data/starBackground.png'
-    #     pos: self.parent.width* 2/3, self.parent.y
-    #     size: self.parent.width/3, self.parent.height
-    #     allow_stretch: True
-    #     keep_ratio: False
     Widget:
         id: background_widget
         pos: self.parent.pos
@@ -303,6 +281,13 @@ Builder.load_string('''
         #    # text: "%s" % self.parent.size
         #    pos: self.parent.pos
         #    size: self.parent.size
+
+    Label:
+        text: "STAGE: %s" % root.stage
+        font_size: 25
+        font_name: 'data/NanumGothic.ttf'
+        pos: root.parent.x, root.parent.height-120
+        size: 100, 40
 
     Label:
         text: "Score: %s" % root.score
@@ -334,7 +319,7 @@ Builder.load_string('''
     left_button: left_button
     right_button: right_button
     a_button: a_button
-    b_button: b_button
+    # b_button: b_button
 
     orientation: 'vertical'
     BoxLayout:
@@ -363,12 +348,12 @@ Builder.load_string('''
                     id: a_button
                     size: 100, 100
                     center: root.width - self.width - 25, self.parent.center_y
-                    source: 'data/lineDark32.png'
-                Image:
-                    id: b_button
-                    size: 100, 100
-                    center: root.width - self.width - 175, self.parent.center_y
                     source: 'data/lineDark31.png'
+                # Image:
+                #     id: b_button
+                #     size: 100, 100
+                #     center: root.width - self.width - 175, self.parent.center_y
+                #     source: 'data/lineDark32.png'
 ''')
 
 
@@ -482,6 +467,7 @@ class GameWidget(Widget):
     monsters = []
     score = NumericProperty(0)
     count = 0
+    stage = NumericProperty(1)
 
     is_start = False
     is_invincible = True
@@ -522,8 +508,9 @@ class GameWidget(Widget):
         self.knight.pos = [self.x + 20, self.y]
 
         # bring stage
-        self.bring_stage('STAGE1')
+        self.bring_stage()
         self.score = 0
+        self.knight.velocity = [5, 0]
 
         # map init
         with self.background_widget.canvas:
@@ -615,7 +602,10 @@ class GameWidget(Widget):
         if self.knight.center_x > self.width:
             self.clear_stage()
             self.knight.pos = [self.x + 20, self.y]
-            self.bring_stage('STAGE2')
+
+            self.stage += 1
+            self.stage_name = "STAGE%d" % self.stage
+            self.bring_stage()
 
         # monster
         for monster in self.monsters:
@@ -693,15 +683,22 @@ class GameWidget(Widget):
             #        self.add_widget(new_brick)
             #        self.bricks = self.bricks + [new_brick]
 
-    def bring_stage(self, stage_name):
-        if stage_name == 'STAGE1':
+    def bring_stage(self):
+        if self.stage == 1:
             _bricks = STAGE1_BRICKS
             _signs = STAGE1_SIGNS
             _monsters = STAGE1_MONSTERS
-        elif stage_name == 'STAGE2':
+
+            # hide controller
+            app.game.left_button.opacity = 0.0
+            app.game.right_button.opacity = 0.0
+
+        elif self.stage == 2:
             _bricks = STAGE2_BRICKS
             _signs = STAGE2_SIGNS
             _monsters = STAGE2_MONSTERS
+            # app.game.left_button.opacity = 1.0
+            # app.game.right_button.opacity = 1.0
 
         for pos in _bricks:
             new_brick = Brick()
@@ -749,39 +746,44 @@ class GameWidget(Widget):
                 self.touch = touch
 
         # Knight Move
-        if app.game.left_button.collide_point(*touch.pos):
-            self.knight.velocity = [-5, 0]
-            self.is_key_down = True
-            touch.grab(self)
-        if app.game.right_button.collide_point(*touch.pos):
-            self.knight.velocity = [5, 0]
-            self.is_key_down = True
-            touch.grab(self)
+        if self.stage in [1, ]:
+            pass
+        else:
+            if app.game.left_button.collide_point(*touch.pos):
+                self.knight.velocity = [-5, 0]
+                self.is_key_down = True
+                touch.grab(self)
+            if app.game.right_button.collide_point(*touch.pos):
+                self.knight.velocity = [5, 0]
+                self.is_key_down = True
+                touch.grab(self)
         if app.game.a_button.collide_point(*touch.pos):
             self.knight_jump()
-        if app.game.b_button.collide_point(*touch.pos):
-            self.knight_jump()
+        # if app.game.b_button.collide_point(*touch.pos):
+        #     self.knight_jump()
 
     def on_touch_up(self, touch):
         if self.princess.collide_point(*touch.pos):
             self.is_touch = False
             self.princess.velocity = [0, 0]
 
-        # if app.game.left_button.collide_point(*touch.pos):
-        #     self.knight.velocity = [0, 0]
-        # if app.game.right_button.collide_point(*touch.pos):
-        #     self.knight.velocity = [0, 0]
-        if self.control_widget_a.collide_point(*touch.pos) & self.is_key_down:
-            self.knight.velocity = [0, 0]
-            self.is_key_down = False
-            touch.ungrab(self)
-
-    def on_touch_move(self, touch):
-        if touch.grab_current is self:
-            if not self.control_widget_a.collide_point(*touch.pos):
+        if self.stage in [1, ]:
+            pass
+        else:
+            if self.control_widget_a.collide_point(*touch.pos) & self.is_key_down:
                 self.knight.velocity = [0, 0]
                 self.is_key_down = False
                 touch.ungrab(self)
+
+    def on_touch_move(self, touch):
+        if self.stage in [1, ]:
+            pass
+        else:
+            if touch.grab_current is self:
+                if not self.control_widget_a.collide_point(*touch.pos):
+                    self.knight.velocity = [0, 0]
+                    self.is_key_down = False
+                    touch.ungrab(self)
 
     # Jump
     def knight_jump(self):
@@ -819,7 +821,7 @@ class GameScreen(Screen):
     left_button = None
     right_button = None
     a_button = None
-    b_button = None
+    # b_button = None
 
     def on_enter(self):
         self.game_widget.init_game(
