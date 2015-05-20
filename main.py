@@ -113,7 +113,7 @@ Builder.load_string('''
             orientation: 'vertical' if self.height > self.width else 'horizontal'
             BoxLayout:
             Label:
-                text: '웨딩RPG'
+                text: '지금 만나러 갑니다'
                 font_size: 60
                 font_name: 'data/NanumGothic.ttf'
                 color: 0/255., 0/255., 0/255., 1
@@ -208,19 +208,19 @@ Builder.load_string('''
         size: 64, 64
 
 
-<Princess>:
-    size: player_image.width, player_image.height
-    Image:
-        id: player_image
-        source: 'data/girl64.png'
-        center: root.center
-        size: 64, 64
-    Image:
-        source: 'data/laserBlue2.png'
-        x: player_image.x
-        y: player_image.y - 100
-        size: 64, 100
-        opacity: 0.5
+# <Princess>:
+#     size: player_image.width, player_image.height
+#     Image:
+#         id: player_image
+#         source: 'data/girl64.png'
+#         center: root.center
+#         size: 64, 64
+#     Image:
+#         source: 'data/laserBlue2.png'
+#         x: player_image.x
+#         y: player_image.y - 100
+#         size: 64, 100
+#         opacity: 0.5
     # Label:
     #    text: root.comment
     #    size: 200, 20,
@@ -228,11 +228,12 @@ Builder.load_string('''
     #    font_size: 15
     #    font_name: 'data/NanumGothic.ttf'
 
-<Knight>:
+<Character>:
+    player_image:player_image
     size: player_image.width, player_image.height
     Image:
         id: player_image
-        source: 'data/boy64.png'
+        source: 'data/girl64.png' if root.is_man else 'data/boy64.png'
         center: root.center
         size: 64, 64
     Label:
@@ -243,7 +244,7 @@ Builder.load_string('''
         font_name: 'data/NanumGothic.ttf'
 
 <Monster>:
-    size: monster_image.width, monster_image.height
+    size: monster_image.width/2, monster_image.height/2
     Image:
         id: monster_image
         source: 'data/spinner.png'
@@ -261,7 +262,7 @@ Builder.load_string('''
     Image:
         id: trap_image
         source: 'data/spikes.png'
-        center: [root.center[0], root.center[1]+ (trap_image.height/4)]
+        center: root.center
         size: 64, 64
     # Label:
     #    text: root.comment
@@ -272,8 +273,8 @@ Builder.load_string('''
 
 
 <GameWidget>:
-    princess: princess
-    knight: knight
+    # princess: princess
+    character: character
     background_widget: background_widget
 
     Widget:
@@ -281,15 +282,15 @@ Builder.load_string('''
         pos: self.parent.pos
         size: self.parent.size
 
-    Princess:
-        id: princess
+    # Princess:
+    #     id: princess
         # pos: root.center
         # Label:
         #    # text: "%s" % self.parent.size
         #    pos: self.parent.pos
         #    size: self.parent.size
-    Knight:
-        id: knight
+    Character:
+        id: character
         # pos: root.center
         # Label:
         #    # text: "%s" % self.parent.size
@@ -297,17 +298,25 @@ Builder.load_string('''
         #    size: self.parent.size
     Label:
         text: root.tip
-        font_size: 60
+        font_size: 40
         font_name: 'data/NanumGothic.ttf'
-        center: [root.center[0], root.center[1]+20]
+        center: [root.center[0], root.center[1]+40]
+        size: 100, 40
+        opacity: 0.8
+
+    Label:
+        text: root.tip2
+        font_size: 20
+        font_name: 'data/NanumGothic.ttf'
+        center: [root.center[0], root.center[1]]
         size: 100, 40
         opacity: 0.5
 
     Label:
         text: "%s초" % root.time
-        font_size: 100
+        font_size: 80
         font_name: 'data/NanumGothic.ttf'
-        center: [root.center[0], root.center[1] + 100]
+        center: [root.center[0], root.center[1] + 120]
         size: 100, 40
         opacity: 0.5
 
@@ -388,24 +397,25 @@ Builder.load_string('''
 # WIDGETS
 
 
-class Princess(Widget):
+# class Princess(Widget):
+#     velocity_x = 0
+#     velocity_y = 0
+#     velocity = [0, 0]
+#     comment = StringProperty("")
+#
+#     def move(self):
+#         self.center = Vector(*self.velocity) + self.center
+#
+#     def stop(self):
+#         self.velocity = [0, 0]
+
+
+class Character(Widget):
     velocity_x = 0
     velocity_y = 0
     velocity = [0, 0]
     comment = StringProperty("")
-
-    def move(self):
-        self.center = Vector(*self.velocity) + self.center
-
-    def stop(self):
-        self.velocity = [0, 0]
-
-
-class Knight(Widget):
-    velocity_x = 0
-    velocity_y = 0
-    velocity = [0, 0]
-    comment = StringProperty("")
+    is_man = NumericProperty(0)
 
     def move(self):
         self.center = Vector(*self.velocity) + self.center
@@ -425,6 +435,7 @@ class Enemy(Widget):
 
 class Monster(Widget):
     pass
+
 
 class Trap(Widget):
     pass
@@ -453,43 +464,121 @@ class ControlWidget(Widget):
 # BOX - 64 x 64
 
 
+# HOW TO PLAY
+# STAGE1_BRICKS = []
+# STAGE1_SIGNS = [[-6, 0], [-2, 0],
+#                 [2, 0], [6, 0]]
+# STAGE1_MONSTERS = []
+# STAGE1_TRAPS = []
+
 STAGE1_BRICKS = []
 STAGE1_SIGNS = [[-6, 0], [-2, 0],
                 [2, 0], [6, 0]]
-STAGE1_MONSTERS = []
-STAGE1_TRAPS = [[-7, 0]]
+STAGE1_MONSTERS = [[-1, 0]]
+STAGE1_TRAPS = [[3, 0]]
 
 
+# HOW TO JUMP
 STAGE2_BRICKS = [[-6, 0], [-5, 0], [-4, 0], [-3, 0], [-2, 0], [-1, 0],
                  [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0],
                  [-5, 1], [-4, 1], [-3, 1], [-2, 1], [-1, 1],
                  [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1],
                  [-4, 2], [-3, 2], [-2, 2], [-1, 2],
                  [0, 2], [1, 2], [2, 2], [3, 2], [4, 2]]
-STAGE2_SIGNS = [[3,3]]
+STAGE2_SIGNS = [[3, 3]]
 STAGE2_MONSTERS = []
 STAGE2_TRAPS = []
 
-STAGE3_BRICKS = [[-6, 0], [-5, 0], [-4, 0], [-3, 0], [-2, 0], [-1, 0],
-                 [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0]]
+# HOW TO AVOID TRAPS
+STAGE3_BRICKS = []
 STAGE3_SIGNS = [[-8, 0]]
 STAGE3_MONSTERS = []
-STAGE3_TRAPS = []
+STAGE3_TRAPS = [[-6, 0], [-2, 0],
+                [2, 0], [6, 0]]
 
-
-
-STAGE4_BRICKS = [[200, 0], [264, 0], [328, 0]]
-STAGE4_SIGNS = [[100, 0]]
+# TRAP AND BRICKS
+STAGE4_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                 [0, 0], [1, 0], [2, 0],
+                 [5, 0], [6, 0]]
+STAGE4_SIGNS = []  # [[1, 0]]
 STAGE4_MONSTERS = []
-STAGE4_TRAPS = []
+STAGE4_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 5
+STAGE5_BRICKS = [[-7, 0], [-6, 0], [-5, 0],  [-2, 0],
+                 [0, 0],  [2, 0], [4, 0], [5, 0], [6, 0],
+                 [-5, 1], [-4, 1],  [-2, 1],
+                 [0, 1],  [2, 1], [4, 1], [5, 1],
+                 [-4, 2],  [-2, 2],
+                 [0, 2], [2, 2], [4, 2]]
+STAGE5_SIGNS = []  # [[1, 0]]
+STAGE5_MONSTERS = []
+STAGE5_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 6
+STAGE6_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                 [0, 0], [1, 0], [2, 0],
+                 [5, 0], [6, 0]]
+STAGE6_SIGNS = []  # [[1, 0]]
+STAGE6_MONSTERS = []
+STAGE6_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 7
+STAGE7_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                 [0, 0], [1, 0], [2, 0],
+                 [5, 0], [6, 0]]
+STAGE7_SIGNS = []  # [[1, 0]]
+STAGE7_MONSTERS = []
+STAGE7_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 8
+STAGE8_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                 [0, 0], [1, 0], [2, 0],
+                 [5, 0], [6, 0]]
+STAGE8_SIGNS = []  # [[1, 0]]
+STAGE8_MONSTERS = []
+STAGE8_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 9
+STAGE9_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                 [0, 0], [1, 0], [2, 0],
+                 [5, 0], [6, 0]]
+STAGE9_SIGNS = []  # [[1, 0]]
+STAGE9_MONSTERS = []
+STAGE9_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 10
+STAGE10_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE10_SIGNS = []  # [[1, 0]]
+STAGE10_MONSTERS = []
+STAGE10_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 11
+STAGE11_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE11_SIGNS = []  # [[1, 0]]
+STAGE11_MONSTERS = []
+STAGE11_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 12
+STAGE6_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                 [0, 0], [1, 0], [2, 0],
+                 [5, 0], [6, 0]]
+STAGE12_SIGNS = []  # [[1, 0]]
+STAGE12_MONSTERS = []
+STAGE12_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
 
 TIME_UP = 60
 
 
 class GameWidget(Widget):
     fps = StringProperty(None)
-    princess = None
-    knight = None
+    # princess = None
+    character = None
 
     bricks = []
     signs = []
@@ -497,16 +586,17 @@ class GameWidget(Widget):
     traps = []
     score = NumericProperty(0)
     stage = NumericProperty(1)
-    tip = StringProperty("이 이야기를 무려 실화입니다")
+    tip = StringProperty("")
+    tip2 = StringProperty("아래 A키를 누르면 점프합니다.")
 
     is_start = False
     is_invincible = True
 
     # Princess's Move
-    is_touch = False
-    touch = None
+    # is_touch = False
+    # touch = None
 
-    # Knight's Move
+    # Character's Move
     is_key_down = False
     is_jumping = False
     is_ycoll = False
@@ -541,10 +631,17 @@ class GameWidget(Widget):
 
         # time
         self.time = 10
+        self.character_pos_init()
 
         # re position princess
-        self.princess.pos = [self.width - self.princess.width - 20, self.y]
-        self.knight.pos = [self.x + 20, self.y]
+        # self.princess.pos = [self.width - self.princess.width - 20, self.y]
+
+    def character_pos_init(self):
+        if self.character.is_man == 0:
+            self.character.pos = [self.x + 20, self.y]
+        else:
+            self.character.pos = [
+                self.width - self.character.width - 20, self.y]
 
     def clear_stage(self):
         """ when game cleard """
@@ -562,13 +659,21 @@ class GameWidget(Widget):
             self.remove_widget(t)
         self.traps = []
 
-        self.princess.pos = [self.width - self.princess.width - 20, self.y]
-        self.knight.pos = [self.x + 20, self.y]
+        # self.princess.pos = [self.width - self.princess.width - 20, self.y]
 
         self.stage += 1
 
         self.bring_stage()
         self.time = 10
+
+        if self.stage in [1, 3, 5]:
+            self.character.velocity = [5, 0]
+            self.character.is_man = 0
+        else:
+            self.character.velocity = [-5, 0]
+            self.character.is_man = 1
+
+        self.character_pos_init()
 
     def init_game(self, ca, cb):
         # start
@@ -581,7 +686,8 @@ class GameWidget(Widget):
 
         # bring stage
         self.bring_stage()
-        self.knight.velocity = [5, 0]
+
+        self.character.velocity = [5, 0]
 
         # map init
         with self.background_widget.canvas:
@@ -596,18 +702,18 @@ class GameWidget(Widget):
 
         self.init_stage()
 
-    def knight_x_collision(self, brick):
-        if self.knight.x < brick.x:
-            self.knight.x = brick.x - self.knight.width - 1
+    def character_x_collision(self, brick):
+        if self.character.x < brick.x:
+            self.character.x = brick.x - self.character.width - 1
         else:
-            self.knight.x = brick.x + brick.width + 1
+            self.character.x = brick.x + brick.width + 1
 
-    def knight_y_collision(self, brick):
-        if self.knight.y > brick.y:
-            self.knight.y = brick.y + brick.height
+    def character_y_collision(self, brick):
+        if self.character.y > brick.y:
+            self.character.y = brick.y + brick.height
             return True
         else:
-            self.knight.y = brick.y - self.knight.height
+            self.character.y = brick.y - self.character.height
             return False
 
     def update(self, dt):
@@ -616,54 +722,53 @@ class GameWidget(Widget):
             return
 
         # Princess's Move
-        if self.is_touch:
-            self.princess.move()
-            self.on_touch_down(self.touch)
+        # if self.is_touch:
+        #     self.princess.move()
+        #     self.on_touch_down(self.touch)
 
         self.is_ycoll = False
 
-        # Knight's Move
+        # Character's Move
         for brick in self.bricks:
-            if self.knight.collide_widget(brick):
-                z = Vector(self.knight.center) - Vector(brick.center)
+            if self.character.collide_widget(brick):
+                z = Vector(self.character.center) - Vector(brick.center)
                 # check y
                 if -0.71 < z.normalize()[0] < 0.71:
-                    if self.knight_y_collision(brick):
+                    if self.character_y_collision(brick):
                         self.is_jumping = False
                         self.is_ycoll = True
 #                        break
                 else:
                     # check x
-                    self.knight_x_collision(brick)
+                    self.character_x_collision(brick)
 
-        self.knight.move()
+        self.character.move()
 
         # y 충돌이면 떨어지지 않는다. // 표면보다 같거나 낮으면 떨어지지 않는다.
-        if not self.is_ycoll and not self.knight.y <= self.y:
-            self.knight.y -= 5.0
+        if not self.is_ycoll and not self.character.y <= self.y:
+            self.character.y -= 5.0
 
         # floor
-        if self.knight.y <= self.y and self.is_jumping:
+        if self.character.y <= self.y and self.is_jumping:
             print "jumping False flooor %d"
             self.is_jumping = False
-            self.knight.y = self.y
+            self.character.y = self.y
 
         # next stage
-        if self.knight.center_x > self.width:
+        if self.character.center_x > self.width or self.character.center_x < 0:
             self.clear_stage()
 
         # monster
         for monster in self.monsters:
-            if self.knight.collide_widget(monster):
-                self.knight.pos = [self.x + 20, self.y]
+            if self.character.collide_widget(monster):
+                self.character.pos = [self.x + 20, self.y]
                 print "hit monster id: %s" % monster.uid
                 self.is_jumping = False
 
         # trap
         for trap in self.traps:
-            if self.knight.collide_widget(trap):
+            if self.character.collide_widget(trap):
                 self.init_stage()
-
 
     def bring_stage(self):
 
@@ -675,15 +780,15 @@ class GameWidget(Widget):
             # hide controller
             app.game.left_button.opacity = 0.0
             app.game.right_button.opacity = 0.0
-            self.knight.comment = "끝까지 도달해야되"
+            self.character.comment = "버섯을 그려달라"
 
         elif self.stage == 2:
             _bricks = STAGE2_BRICKS
             _signs = STAGE2_SIGNS
             _monsters = STAGE2_MONSTERS
             _traps = STAGE2_TRAPS
-            self.tip = "(예제)한 남자가 회식장소로 향하고 있었습니다."
-            self.knight.comment = "언덕을 점프로 넘어야해"
+            self.tip = "지금, 만나러 갑니다."
+            self.character.comment = "기록 갱신은 나의 목표"
             # app.game.left_button.opacity = 1.0
             # app.game.right_button.opacity = 1.0
 
@@ -692,7 +797,7 @@ class GameWidget(Widget):
             _signs = STAGE3_SIGNS
             _monsters = STAGE3_MONSTERS
             _traps = STAGE3_TRAPS
-            self.tip = "그는 회사에서 매우 성실한 사람이었죠"
+            self.tip = "결혼은 따듯한 사람과 하거라"
 
         elif self.stage == 4:
             _bricks = STAGE4_BRICKS
@@ -700,14 +805,16 @@ class GameWidget(Widget):
             _monsters = STAGE4_MONSTERS
             _traps = STAGE4_TRAPS
 
-            self.tip = "그를 본 고깃집 아주머니는.."
+            self.tip = "사랑하는 것은 천국을 살짝 엿보는 것이다"
+            self.tip2 = "작가 카렌 선드"
 
         elif self.stage == 5:
             _bricks = STAGE5_BRICKS
             _signs = STAGE5_SIGNS
             _monsters = STAGE5_MONSTERS
             _traps = STAGE5_TRAPS
-            self.tip = "자신의 딸을 소개시켜 주기로 합니다."
+            self.tip = "사랑 받고 싶다면 사랑하라, 그리고 사랑스럽게 행동하라"
+            self.tip2 = "정치가 벤자민 프랭클린"
 
         elif self.stage == 6:
             _bricks = STAGE6_BRICKS
@@ -715,7 +822,8 @@ class GameWidget(Widget):
             _monsters = STAGE6_MONSTERS
             _traps = STAGE6_TRAPS
 
-            self.tip = "그런데 소개팅 당일, 그는 약속시간에 늦었습니다."
+            self.tip = "강력한 사랑은 판단하지 않는다. 주기만 할 뿐이다."
+            self.tip2 = "수녀 마더 테레사"
 
         elif self.stage == 7:
             _bricks = STAGE7_BRICKS
@@ -729,14 +837,15 @@ class GameWidget(Widget):
             _signs = STAGE8_SIGNS
             _monsters = STAGE8_MONSTERS
             _traps = STAGE8_TRAPS
-            self.tip = "무려 한시간을 늦게 왔어요"
+            self.tip = "사랑이란 서로 마주보는 것이 아니라, 둘이서 같은 방향을 보는 것이다"
+            self.tip2 = "생텍쥐베리"
 
         elif self.stage == 9:
             _bricks = STAGE9_BRICKS
             _signs = STAGE9_SIGNS
             _monsters = STAGE9_MONSTERS
             _traps = STAGE9_TRAPS
-            self.tip = "이 남자를 기다려준 사람이 있었어요"
+            self.tip = "흐아아앙"
 
         elif self.stage == 10:
             _bricks = STAGE10_BRICKS
@@ -750,14 +859,16 @@ class GameWidget(Widget):
             _signs = STAGE11_SIGNS
             _monsters = STAGE11_MONSTERS
             _traps = STAGE11_TRAPS
-            self.tip = "우리 형수님 되실 분이에요"
+            self.tip = "사랑이라는 게 처음부터 풍덩 빠져 버리는 건 줄만 알았지… 이렇게 서서히 물들어가는 것인 줄은 몰랐어"
+            self.tip2 = "두 캐릭터를 이용하세요"
 
         elif self.stage == 12:
             _bricks = STAGE12_BRICKS
             _signs = STAGE12_SIGNS
             _monsters = STAGE12_MONSTERS
             _traps = STAGE12_TRAPS
-            self.tip = "결혼을 축하합니다. 스테이지를 늘리고 싶은데"
+            self.tip = StringProperty("You make me want to be a better man")
+            self.tip2 = "두 캐릭터를 이용하세요"
 
         for pos in _bricks:
             new_brick = Brick()
@@ -775,62 +886,61 @@ class GameWidget(Widget):
 
         for pos in _monsters:
             new_monster = Monster()
-            new_monster.x = self.center[0] + (pos[0] * 64)
-            new_monster.y = self.y + (pos[1] * 64)
+            new_monster.x = self.center[0] + (pos[0] * 64) + 16
+            new_monster.y = self.y + (pos[1] * 64) + 16
             self.add_widget(new_monster)
             self.monsters = self.monsters + [new_monster]
 
         for pos in _traps:
             new_trap = Trap()
-            new_trap.x = self.center[0] + (pos[0] * 64)
-            new_trap.y = self.y + (pos[1] * 64)
+            new_trap.x = self.center[0] + (pos[0] * 64) + 16
+            new_trap.y = self.y + (pos[1] * 64) + 16
             self.add_widget(new_trap)
             self.traps = self.traps + [new_trap]
-
-
 
     # Control
     def on_touch_down(self, touch):
 
         # Princess Move
-        if self.collide_point(*touch.pos):
-            if self.princess.collide_point(*touch.pos):
-                self.princess.velocity = [0, 0]
-            else:
-                v = Vector(touch.x, touch.y) - Vector(self.princess.center)
-                v = v.normalize()
-                v *= 4
-                self.princess.velocity = v
-                self.is_touch = True
-                self.touch = touch
+        # if self.collide_point(*touch.pos):
+        #    if self.princess.collide_point(*touch.pos):
+        #        self.princess.velocity = [0, 0]
+        #    else:
+        #        v = Vector(touch.x, touch.y) - Vector(self.princess.center)
+        #        v = v.normalize()
+        #        v *= 4
+        #        self.princess.velocity = v
+        #        self.is_touch = True
+        #        self.touch = touch
 
-        # Knight Move
+        # Character Move
         if self.stage in [1, ]:
             pass
         else:
             if app.game.left_button.collide_point(*touch.pos):
-                self.knight.velocity = [-5, 0]
+                self.character.velocity = [-5, 0]
                 self.is_key_down = True
                 touch.grab(self)
             if app.game.right_button.collide_point(*touch.pos):
-                self.knight.velocity = [5, 0]
+                self.character.velocity = [5, 0]
                 self.is_key_down = True
                 touch.grab(self)
+
         if app.game.a_button.collide_point(*touch.pos):
-            self.knight_jump()
+            self.character_jump()
         # if app.game.b_button.collide_point(*touch.pos):
-        #     self.knight_jump()
+        #     self.character_jump()
 
     def on_touch_up(self, touch):
-        if self.princess.collide_point(*touch.pos):
-            self.is_touch = False
-            self.princess.velocity = [0, 0]
+        # if self.princess.collide_point(*touch.pos):
+        #     self.is_touch = False
+        #     self.princess.velocity = [0, 0]
 
         if self.stage in [1, ]:
             pass
         else:
             if self.control_widget_a.collide_point(*touch.pos) & self.is_key_down:
-                self.knight.velocity = [0, 0]
+                self.character.velocity = [0, 0]
                 self.is_key_down = False
                 touch.ungrab(self)
 
@@ -840,29 +950,29 @@ class GameWidget(Widget):
         else:
             if touch.grab_current is self:
                 if not self.control_widget_a.collide_point(*touch.pos):
-                    self.knight.velocity = [0, 0]
+                    self.character.velocity = [0, 0]
                     self.is_key_down = False
                     touch.ungrab(self)
 
     # Jump
-    def knight_jump(self):
+    def character_jump(self):
         if self.is_jumping:
             return
         Clock.schedule_interval(self.up, 1.0 / 60.0)
-        Clock.schedule_once(self.knight_jump_high, 0.2)
+        Clock.schedule_once(self.character_jump_high, 0.2)
 
-    def knight_jump_high(self, dt):
+    def character_jump_high(self, dt):
         Clock.unschedule(self.up)
 
     def up(self, dt):
         # Chemi
-        if self.knight.y < self.princess.y and self.princess.x + 20 >= self.knight.x and self.princess.x - 20 < self.knight.x:
-            self.knight.y += 32.0
-        else:
-            self.knight.y += 16.0
+        # if self.character.y < self.princess.y and self.princess.x + 20 >= self.character.x and self.princess.x - 20 < self.character.x:
+        #     self.character.y += 32.0
+        # else:
+        self.character.y += 16.0
         self.is_jumping = True
 
-    # Background Control
+        # Background Control
     def txupdate(self, *l):
         t = Clock.get_boottime()
         v = 0.1
