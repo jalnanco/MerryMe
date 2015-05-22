@@ -34,6 +34,8 @@ from kivy.vector import Vector
 # random respon
 import random
 
+from math import sin
+
 #!/usr/bin/kivy
 __version__ = '1.0'
 
@@ -189,7 +191,7 @@ Builder.load_string('''
         id: brick_image
         source: 'data/boxCrate_double.png'
         center: root.center
-        size: 64, 64
+        size: root.block_size, root.block_size
 <Sign>:
     size: brick_image.width, brick_image.height
     center: root.center
@@ -197,7 +199,7 @@ Builder.load_string('''
         id: brick_image
         source: 'data/signRight.png'
         center: root.center
-        size: 64, 64
+        size: root.block_size, root.block_size
 <Monster>:
     size: monster_image.width, monster_image.height
     center: root.center
@@ -205,8 +207,7 @@ Builder.load_string('''
         id: monster_image
         source: 'data/spinner.png'
         center: root.center
-        size: 64, 64
-
+        size: root.block_size, root.block_size
 
 # <Princess>:
 #     size: player_image.width, player_image.height
@@ -230,12 +231,13 @@ Builder.load_string('''
 
 <Character>:
     player_image:player_image
-    size: player_image.width, player_image.height
+
+    size: player_image.width-10, player_image.height-10
     Image:
         id: player_image
         source: 'data/girl64.png' if root.is_man else 'data/boy64.png'
         center: root.center
-        size: 64, 64
+        size: root.block_size, root.block_size
     Label:
         text: root.comment
         size: 200, 20,
@@ -249,7 +251,7 @@ Builder.load_string('''
         id: monster_image
         source: 'data/spinner.png'
         center: root.center
-        size: 64, 64
+        size: root.block_size, root.block_size
     # Label:
     #    text: root.comment
     #    size: 200, 20,
@@ -263,7 +265,7 @@ Builder.load_string('''
         id: trap_image
         source: 'data/spikes.png'
         center: root.center
-        size: 64, 64
+        size: root.block_size, root.block_size
     # Label:
     #    text: root.comment
     #    size: 200, 20,
@@ -416,28 +418,34 @@ class Character(Widget):
     velocity = [0, 0]
     comment = StringProperty("")
     is_man = NumericProperty(0)
+    block_size = NumericProperty(64)
 
     def move(self):
         self.center = Vector(*self.velocity) + self.center
 
 
 class Brick(Widget):
+    block_size = NumericProperty(64)
     pass
 
 
 class Sign(Widget):
+    block_size = NumericProperty(64)
     pass
 
 
 class Enemy(Widget):
+    block_size = NumericProperty(64)
     pass
 
 
 class Monster(Widget):
+    block_size = NumericProperty(64)
     pass
 
 
 class Trap(Widget):
+    block_size = NumericProperty(64)
     pass
 
 
@@ -465,17 +473,17 @@ class ControlWidget(Widget):
 
 
 # HOW TO PLAY
-# STAGE1_BRICKS = []
-# STAGE1_SIGNS = [[-6, 0], [-2, 0],
-#                 [2, 0], [6, 0]]
-# STAGE1_MONSTERS = []
-# STAGE1_TRAPS = []
-
 STAGE1_BRICKS = []
 STAGE1_SIGNS = [[-6, 0], [-2, 0],
                 [2, 0], [6, 0]]
-STAGE1_MONSTERS = [[-1, 0]]
-STAGE1_TRAPS = [[3, 0]]
+STAGE1_MONSTERS = []
+STAGE1_TRAPS = []
+
+#STAGE1_BRICKS = []
+# STAGE1_SIGNS = [[-6, 0], [-2, 0],
+#                [2, 0], [6, 0]]
+#STAGE1_MONSTERS = [[-1, 0]]
+#STAGE1_TRAPS = [[3, 0]]
 
 
 # HOW TO JUMP
@@ -586,7 +594,7 @@ class GameWidget(Widget):
     traps = []
     score = NumericProperty(0)
     stage = NumericProperty(1)
-    tip = StringProperty("")
+    tip = StringProperty("어린시절 슈퍼마리오를 좋아했던 남자와..")
     tip2 = StringProperty("아래 A키를 누르면 점프합니다.")
 
     is_start = False
@@ -607,6 +615,8 @@ class GameWidget(Widget):
 
     # timer
     time = NumericProperty(0.1)
+
+    block_size = NumericProperty(64)
 
     def update_time(self, dt):
         self.time -= 0.1
@@ -664,13 +674,12 @@ class GameWidget(Widget):
         self.stage += 1
 
         self.bring_stage()
-        self.time = 10
 
         if self.stage in [1, 3, 5]:
-            self.character.velocity = [5, 0]
+            self.character.velocity = [self.block_size / 12, 0]
             self.character.is_man = 0
         else:
-            self.character.velocity = [-5, 0]
+            self.character.velocity = [-self.block_size / 12, 0]
             self.character.is_man = 1
 
         self.character_pos_init()
@@ -685,9 +694,10 @@ class GameWidget(Widget):
         Clock.schedule_interval(self.txupdate, 0)
 
         # bring stage
+        # self.stage = 5
         self.bring_stage()
 
-        self.character.velocity = [5, 0]
+        self.character.velocity = [self.block_size / 16, 0]
 
         # map init
         with self.background_widget.canvas:
@@ -704,9 +714,9 @@ class GameWidget(Widget):
 
     def character_x_collision(self, brick):
         if self.character.x < brick.x:
-            self.character.x = brick.x - self.character.width - 1
+            self.character.x = brick.x - self.character.width - 3
         else:
-            self.character.x = brick.x + brick.width + 1
+            self.character.x = brick.x + brick.width + 3
 
     def character_y_collision(self, brick):
         if self.character.y > brick.y:
@@ -730,17 +740,19 @@ class GameWidget(Widget):
 
         # Character's Move
         for brick in self.bricks:
+
+            # meet Block
             if self.character.collide_widget(brick):
                 z = Vector(self.character.center) - Vector(brick.center)
-                # check y
-                if -0.71 < z.normalize()[0] < 0.71:
+                if -0.72 < z.normalize()[0] < 0.72:
+                    # down
                     if self.character_y_collision(brick):
                         self.is_jumping = False
                         self.is_ycoll = True
-#                        break
                 else:
-                    # check x
                     self.character_x_collision(brick)
+
+                print z.normalize()[0]
 
         self.character.move()
 
@@ -772,23 +784,29 @@ class GameWidget(Widget):
 
     def bring_stage(self):
 
+        # default
+        self.time = 10
+
         if self.stage == 1:
             _bricks = STAGE1_BRICKS
             _signs = STAGE1_SIGNS
             _monsters = STAGE1_MONSTERS
             _traps = STAGE1_TRAPS
+
             # hide controller
             app.game.left_button.opacity = 0.0
             app.game.right_button.opacity = 0.0
-            self.character.comment = "버섯을 그려달라"
+            self.character.comment = "A키를 눌러서 점프를 해보잣!"
+            self.block_size = 64
 
         elif self.stage == 2:
             _bricks = STAGE2_BRICKS
             _signs = STAGE2_SIGNS
             _monsters = STAGE2_MONSTERS
             _traps = STAGE2_TRAPS
-            self.tip = "지금, 만나러 갑니다."
+            self.tip = "소닉을 좋아했던 여자가 있었습니다."
             self.character.comment = "기록 갱신은 나의 목표"
+            self.block_size = 60
             # app.game.left_button.opacity = 1.0
             # app.game.right_button.opacity = 1.0
 
@@ -797,13 +815,15 @@ class GameWidget(Widget):
             _signs = STAGE3_SIGNS
             _monsters = STAGE3_MONSTERS
             _traps = STAGE3_TRAPS
-            self.tip = "결혼은 따듯한 사람과 하거라"
+            self.tip = "이 게임은 둘의 결혼을 축하하기 위해 만들었습니다."
+            self.block_size = 50
 
         elif self.stage == 4:
             _bricks = STAGE4_BRICKS
             _signs = STAGE4_SIGNS
             _monsters = STAGE4_MONSTERS
             _traps = STAGE4_TRAPS
+            self.block_size = 40
 
             self.tip = "사랑하는 것은 천국을 살짝 엿보는 것이다"
             self.tip2 = "작가 카렌 선드"
@@ -813,6 +833,8 @@ class GameWidget(Widget):
             _signs = STAGE5_SIGNS
             _monsters = STAGE5_MONSTERS
             _traps = STAGE5_TRAPS
+            self.block_size = 30
+
             self.tip = "사랑 받고 싶다면 사랑하라, 그리고 사랑스럽게 행동하라"
             self.tip2 = "정치가 벤자민 프랭클린"
 
@@ -830,7 +852,8 @@ class GameWidget(Widget):
             _signs = STAGE7_SIGNS
             _monsters = STAGE7_MONSTERS
             _traps = STAGE7_TRAPS
-            self.tip = "1분, 10분, 30분.."
+            self.tip = "결혼은 따듯한 사람과 하거라."
+            self.tip2 = "어바웃 타임에서 주인공 아버님"
 
         elif self.stage == 8:
             _bricks = STAGE8_BRICKS
@@ -870,31 +893,41 @@ class GameWidget(Widget):
             self.tip = StringProperty("You make me want to be a better man")
             self.tip2 = "두 캐릭터를 이용하세요"
 
+        self.character.block_size = self.block_size
+
         for pos in _bricks:
             new_brick = Brick()
-            new_brick.x = self.center[0] + (pos[0] * 64)
-            new_brick.y = self.y + (pos[1] * 64)
+            new_brick.block_size = self.block_size
+            new_brick.x = self.center[0] + (pos[0] * self.block_size)
+            new_brick.y = self.y + (pos[1] * self.block_size)
             self.add_widget(new_brick)
             self.bricks = self.bricks + [new_brick]
 
         for pos in _signs:
             new_sign = Sign()
-            new_sign.x = self.center[0] + (pos[0] * 64)
-            new_sign.y = self.y + (pos[1] * 64)
+            new_sign.block_size = self.block_size
+            new_sign.x = self.center[0] + (pos[0] * self.block_size)
+            new_sign.y = self.y + (pos[1] * self.block_size)
             self.add_widget(new_sign)
             self.signs = self.signs + [new_sign]
 
         for pos in _monsters:
             new_monster = Monster()
-            new_monster.x = self.center[0] + (pos[0] * 64) + 16
-            new_monster.y = self.y + (pos[1] * 64) + 16
+            new_monster.block_size = self.block_size
+            new_monster.x = self.center[
+                0] + (pos[0] * self.block_size) + self.block_size / 4
+            new_monster.y = self.y + \
+                (pos[1] * self.block_size) + self.block_size / 4
             self.add_widget(new_monster)
             self.monsters = self.monsters + [new_monster]
 
         for pos in _traps:
             new_trap = Trap()
-            new_trap.x = self.center[0] + (pos[0] * 64) + 16
-            new_trap.y = self.y + (pos[1] * 64) + 16
+            new_trap.block_size = self.block_size
+            new_trap.x = self.center[
+                0] + (pos[0] * self.block_size) + self.block_size / 4
+            new_trap.y = self.y + \
+                (pos[1] * self.block_size) + self.block_size / 4
             self.add_widget(new_trap)
             self.traps = self.traps + [new_trap]
 
@@ -918,11 +951,11 @@ class GameWidget(Widget):
             pass
         else:
             if app.game.left_button.collide_point(*touch.pos):
-                self.character.velocity = [-5, 0]
+                self.character.velocity = [-self.block_size / 12, 0]
                 self.is_key_down = True
                 touch.grab(self)
             if app.game.right_button.collide_point(*touch.pos):
-                self.character.velocity = [5, 0]
+                self.character.velocity = [self.block_size / 12, 0]
                 self.is_key_down = True
                 touch.grab(self)
 
@@ -955,22 +988,38 @@ class GameWidget(Widget):
                     touch.ungrab(self)
 
     # Jump
+    jump_accel = 0
+    before_y = 0
+    dt = 0
+
     def character_jump(self):
         if self.is_jumping:
             return
         Clock.schedule_interval(self.up, 1.0 / 60.0)
         Clock.schedule_once(self.character_jump_high, 0.2)
+        self.jump_accel = self.character.block_size / 16
+
+        # before
+        self.before_y = self.character.y
+        self.dt = 0
 
     def character_jump_high(self, dt):
         Clock.unschedule(self.up)
+        self.jump_accel = self.character.block_size / 16
 
     def up(self, dt):
         # Chemi
         # if self.character.y < self.princess.y and self.princess.x + 20 >= self.character.x and self.princess.x - 20 < self.character.x:
         #     self.character.y += 32.0
         # else:
-        self.character.y += 16.0
+        self.dt += dt
+        self.character.y = self.before_y + \
+            sin(self.dt * 3.14) * self.character.block_size * 4
+
+        # self.character.y += self.character.block_size / 3 - \
+        #    self.character.block_size / 64 * self.jump_accel
         self.is_jumping = True
+        # self.jump_accel = self.character.block_size / 16
 
         # Background Control
     def txupdate(self, *l):
