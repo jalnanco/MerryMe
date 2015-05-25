@@ -46,12 +46,12 @@ app = None
 # 여기에 kivy파일을 추가함 - 그림파일 불러오기용
 Builder.load_string('''
 #:import WipeTransition kivy.uix.screenmanager.WipeTransition
-<Widget>:
-    canvas.after:
-        Line:
-            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
-            dash_offset: 2
-            dash_length: 3
+#<Widget>:
+#    canvas.after:
+#        Line:
+#            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
+#            dash_offset: 2
+#            dash_length: 3
 
 <EndScreen>:
     BoxLayout:
@@ -95,19 +95,14 @@ Builder.load_string('''
             size_hint_x:0.1
 
 <MenuScreen>:
+    Image:
+        source: 'data/blue_land.png'
     BoxLayout:
         pos: root.pos
         size: root.size
         padding: '10dp'
         spacing: '10dp'
         # orientation: 'vertical' if self.height > self.width else 'horizontal'
-        canvas:
-            Color:
-                rgb: 218/255., 204/255., 175/255., 1
-            # BackGroundColor
-            Rectangle:
-                pos: self.pos
-                size: self.size
         BoxLayout:
             size_hint_x:0.1
         BoxLayout:
@@ -115,41 +110,35 @@ Builder.load_string('''
             orientation: 'vertical' if self.height > self.width else 'horizontal'
             BoxLayout:
             Label:
-                text: '지금 만나러 갑니다'
+                text: '결혼을 축하해'
                 font_size: 60
                 font_name: 'data/NanumGothic.ttf'
-                color: 0/255., 0/255., 0/255., 1
+                color: (0, 0, 0, 1)
             Button:
-                text: '시작하기'
-                background_color: 122/255., 101/255., 54/255., 1
+                text: '축하하러 떠나기'
+                background_color: 0/255., 140/255., 140/255., 1
                 font_name: 'data/NanumGothic.ttf'
                 size_hint_y:0.2
-                on_press: root.manager.transition = WipeTransition(); root.manager.current = 'character screen'
+                on_press: root.manager.transition = WipeTransition(); root.manager.current = 'game screen'
             BoxLayout:
                 size_hint_y:0.1
-            Button:
-                text: '안먹는 버튼'
-                background_color: 122/255., 101/255., 54/255., 1
-                font_name: 'data/NanumGothic.ttf'
-                size_hint_y:0.2
+            # Button:
+            #    text: '안먹는 버튼'
+            #    background_color: 122/255., 101/255., 54/255., 1
+            #    font_name: 'data/NanumGothic.ttf'
+            #    size_hint_y:0.2
             BoxLayout:
         BoxLayout:
             size_hint_x:0.1
 
 <CharacterScreen>:
+    Image:
+        source: 'data/blue_land.png'
     BoxLayout:
         pos: root.pos
         size: root.size
         padding: '10dp'
         spacing: '10dp'
-        # orientation: 'vertical' if self.height > self.width else 'horizontal'
-        canvas:
-            Color:
-                rgb: 218 / 255., 218 / 255., 175 / 255.
-            # BackGroundColor
-            Rectangle:
-                pos: self.pos
-                size: self.size
         BoxLayout:
             size_hint_x:0.1
         BoxLayout:
@@ -165,19 +154,19 @@ Builder.load_string('''
                 Button:
                     text: '신랑'
                     font_size: 30
-                    background_color: 218/255., 195/255., 175/255., 1
+                    background_color: 0/255., 140/255., 140/255., 1
                     font_name: 'data/NanumGothic.ttf'
                     on_press: root.manager.transition = WipeTransition(); root.manager.current = 'game screen'
                 Button:
                     text: '신부'
                     font_size: 30
-                    background_color: 218/255., 195/255., 175/255., 1
+                    background_color: 0/255., 140/255., 140/255., 1
                     font_name: 'data/NanumGothic.ttf'
             BoxLayout:
                 Button:
                     text: '메뉴로'
                     font_size: 30
-                    background_color: 218/255., 195/255., 175/255., 1
+                    background_color: 0/255., 140/255., 140/255., 1
                     font_name: 'data/NanumGothic.ttf'
                     on_press: root.manager.transition = WipeTransition(); root.manager.current = 'menu screen'
 
@@ -205,7 +194,7 @@ Builder.load_string('''
     center: root.center
     Image:
         id: monster_image
-        source: 'data/spinner.png'
+        source: root.get_monster_image()
         center: root.center
         size: root.block_size, root.block_size
 
@@ -238,20 +227,23 @@ Builder.load_string('''
         source: 'data/girl64.png' if root.is_man else 'data/boy64.png'
         center: root.center
         size: root.block_size, root.block_size
+        allow_stretch: True
     Label:
         text: root.comment
         size: 200, 20,
         pos: root.x - 15, root.center_y + 30
         font_size: 15
         font_name: 'data/NanumGothic.ttf'
+        color: (0, 0, 0, 1)
 
-<Monster>:
-    size: monster_image.width/2, monster_image.height/2
-    Image:
-        id: monster_image
-        source: 'data/spinner.png'
-        center: root.center
-        size: root.block_size, root.block_size
+
+# <Monster>:
+#     size: monster_image.width/2, monster_image.height/2
+#     Image:
+#         id: monster_image
+#         source: 'data/spinner.png'
+#         center: root.center
+#         size: root.block_size, root.block_size
     # Label:
     #    text: root.comment
     #    size: 200, 20,
@@ -278,6 +270,7 @@ Builder.load_string('''
     # princess: princess
     character: character
     background_widget: background_widget
+    tip_label: tip_label
 
     Widget:
         id: background_widget
@@ -299,12 +292,13 @@ Builder.load_string('''
         #    pos: self.parent.pos
         #    size: self.parent.size
     Label:
+        id: tip_label
         text: root.tip
         font_size: 40
         font_name: 'data/NanumGothic.ttf'
         center: [root.center[0], root.center[1]+40]
         size: 100, 40
-        opacity: 0.8
+        color: (0, 0, 0, 1)
 
     Label:
         text: root.tip2
@@ -312,7 +306,7 @@ Builder.load_string('''
         font_name: 'data/NanumGothic.ttf'
         center: [root.center[0], root.center[1]]
         size: 100, 40
-        opacity: 0.5
+        color: (0, 0, 0, 1)
 
     Label:
         text: "%s초" % root.time
@@ -320,21 +314,21 @@ Builder.load_string('''
         font_name: 'data/NanumGothic.ttf'
         center: [root.center[0], root.center[1] + 120]
         size: 100, 40
-        opacity: 0.5
+        color: (0, 0, 0, 1)
 
     Label:
         text: "STAGE: %s" % root.stage
         font_size: 25
         font_name: 'data/NanumGothic.ttf'
         pos: root.parent.x, root.parent.height-120
-        size: 100, 40
+        color: (0, 0, 0, 1)
 
     Label:
         text: "Score: %s" % root.score
         font_size: 25
         font_name: 'data/NanumGothic.ttf'
         pos: root.parent.x, root.parent.height-40
-        size: 100, 40
+        color: (0, 0, 0, 1)
 
     Label:
         text: 'FPS: ' + root.fps if root.fps != None else 'FPS:'
@@ -343,6 +337,7 @@ Builder.load_string('''
         pos: root.parent.x, root.parent.height-80
         size: 100, 40
         halign: 'right'
+        color: (0, 0, 0, 1)
 
     # Enemy:
     #    id: enemy
@@ -441,7 +436,11 @@ class Enemy(Widget):
 
 class Monster(Widget):
     block_size = NumericProperty(64)
-    pass
+    status = 0
+
+    def get_monster_image(self):
+        #        if self.status == 0:
+        return "data/mushroomRed64.png"
 
 
 class Trap(Widget):
@@ -472,48 +471,43 @@ class ControlWidget(Widget):
 # BOX - 64 x 64
 
 
-# HOW TO PLAY
+# STAGE 1 - MOVE
 STAGE1_BRICKS = []
-STAGE1_SIGNS = [[-6, 0], [-2, 0],
-                [2, 0], [6, 0]]
+STAGE1_SIGNS = [[-6, 0]]
 STAGE1_MONSTERS = []
 STAGE1_TRAPS = []
 
-#STAGE1_BRICKS = []
-# STAGE1_SIGNS = [[-6, 0], [-2, 0],
-#                [2, 0], [6, 0]]
-#STAGE1_MONSTERS = [[-1, 0]]
-#STAGE1_TRAPS = [[3, 0]]
-
-
-# HOW TO JUMP
+# STAGE 2 - BLOCK JUMP
 STAGE2_BRICKS = [[-6, 0], [-5, 0], [-4, 0], [-3, 0], [-2, 0], [-1, 0],
                  [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0],
                  [-5, 1], [-4, 1], [-3, 1], [-2, 1], [-1, 1],
                  [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1],
                  [-4, 2], [-3, 2], [-2, 2], [-1, 2],
-                 [0, 2], [1, 2], [2, 2], [3, 2], [4, 2]]
-STAGE2_SIGNS = [[3, 3]]
+                 [0, 2], [1, 2], [2, 2], [3, 2], [4, 2],
+                 ]
+STAGE2_SIGNS = []  # [[3, 3]]
 STAGE2_MONSTERS = []
 STAGE2_TRAPS = []
 
-# HOW TO AVOID TRAPS
+# STAGE 3 - AVOID TRAP
 STAGE3_BRICKS = []
 STAGE3_SIGNS = [[-8, 0]]
 STAGE3_MONSTERS = []
 STAGE3_TRAPS = [[-6, 0], [-2, 0],
                 [2, 0], [6, 0]]
 
-# TRAP AND BRICKS
-STAGE4_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
-                 [0, 0], [1, 0], [2, 0],
+# STAGE 4 - AVOID TRAP USING BLOCK SIZE DOWN(58)
+STAGE4_BRICKS = [[-3, 0], [-3, 1], [-3, 2],
+                 [-2, 0], [-2, 1], [-2, 2],
+                 [1, 0], [1, 2],
+                 [2, 0], [2, 2],
                  [5, 0], [6, 0]]
-STAGE4_SIGNS = []  # [[1, 0]]
+STAGE4_SIGNS = []
 STAGE4_MONSTERS = []
-STAGE4_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+STAGE4_TRAPS = [[-6, 0], [-5, 0], [-4, 0], [-1, 0], [0, 0], [3, 0], [4, 0]]
 
-# STAGE 5
-STAGE5_BRICKS = [[-7, 0], [-6, 0], [-5, 0],  [-2, 0],
+# STAGE 5 - AVOID MONSTER WITH BLOCK
+STAGE5_BRICKS = [[-6, 0], [-5, 0], [-4, 0], [-2, 0],
                  [0, 0],  [2, 0], [4, 0], [5, 0], [6, 0],
                  [-5, 1], [-4, 1],  [-2, 1],
                  [0, 1],  [2, 1], [4, 1], [5, 1],
@@ -521,7 +515,7 @@ STAGE5_BRICKS = [[-7, 0], [-6, 0], [-5, 0],  [-2, 0],
                  [0, 2], [2, 2], [4, 2]]
 STAGE5_SIGNS = []  # [[1, 0]]
 STAGE5_MONSTERS = []
-STAGE5_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+STAGE5_TRAPS = [[-3, 0], [-1, 0], [1, 0], [3, 0]]
 
 # STAGE 6
 STAGE6_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
@@ -529,7 +523,7 @@ STAGE6_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
                  [5, 0], [6, 0]]
 STAGE6_SIGNS = []  # [[1, 0]]
 STAGE6_MONSTERS = []
-STAGE6_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+STAGE6_TRAPS = []  # [[-4, 0], [-3, 0], [3, 0], [4, 0]]
 
 # STAGE 7
 STAGE7_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
@@ -572,12 +566,77 @@ STAGE11_MONSTERS = []
 STAGE11_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
 
 # STAGE 12
-STAGE6_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
-                 [0, 0], [1, 0], [2, 0],
-                 [5, 0], [6, 0]]
+STAGE12_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
 STAGE12_SIGNS = []  # [[1, 0]]
 STAGE12_MONSTERS = []
 STAGE12_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 13
+STAGE13_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE13_SIGNS = []  # [[1, 0]]
+STAGE13_MONSTERS = []
+STAGE13_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 14
+STAGE14_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE14_SIGNS = []  # [[1, 0]]
+STAGE14_MONSTERS = []
+STAGE14_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 15
+STAGE15_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE15_SIGNS = []  # [[1, 0]]
+STAGE15_MONSTERS = []
+STAGE15_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+
+# STAGE 16
+STAGE16_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE16_SIGNS = []  # [[1, 0]]
+STAGE16_MONSTERS = []
+STAGE16_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 17
+STAGE17_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE17_SIGNS = []  # [[1, 0]]
+STAGE17_MONSTERS = []
+STAGE17_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 18
+STAGE18_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE18_SIGNS = []  # [[1, 0]]
+STAGE18_MONSTERS = []
+STAGE18_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 19
+STAGE19_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE19_SIGNS = []  # [[1, 0]]
+STAGE19_MONSTERS = []
+STAGE19_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
+
+# STAGE 20
+STAGE20_BRICKS = [[-6, 0], [-5, 0], [-2, 0], [-1, 0],
+                  [0, 0], [1, 0], [2, 0],
+                  [5, 0], [6, 0]]
+STAGE20_SIGNS = []  # [[1, 0]]
+STAGE20_MONSTERS = []
+STAGE20_TRAPS = [[-4, 0], [-3, 0], [3, 0], [4, 0]]
 
 
 TIME_UP = 60
@@ -593,9 +652,10 @@ class GameWidget(Widget):
     monsters = []
     traps = []
     score = NumericProperty(0)
-    stage = NumericProperty(1)
-    tip = StringProperty("어린시절 슈퍼마리오를 좋아했던 남자와..")
-    tip2 = StringProperty("아래 A키를 누르면 점프합니다.")
+    stage = NumericProperty(3)
+    tip = StringProperty("어린시절 슈퍼마리오를 좋아했던 우리 형과..")
+    tip2 = StringProperty("")
+    tip_label = ObjectProperty()
 
     is_start = False
     is_invincible = True
@@ -626,12 +686,6 @@ class GameWidget(Widget):
 
     def update_fps(self, dt):
         self.fps = str(int(Clock.get_fps()))
-        # if fps < 40:
-        # self.remove_widget(self.enemies[0])
-        # self.enemies.remove(self.enemies[0])
-        # print "ddd", len(self.enemies)
-        # self.enemies[-1].width += 10
-        # self.enemies[-1].height += 10
 
     def init_stage(self):
         """ when game failed """
@@ -647,6 +701,8 @@ class GameWidget(Widget):
         # self.princess.pos = [self.width - self.princess.width - 20, self.y]
 
     def character_pos_init(self):
+        self.character.player_image.size = [64, 64]
+
         if self.character.is_man == 0:
             self.character.pos = [self.x + 20, self.y]
         else:
@@ -675,7 +731,7 @@ class GameWidget(Widget):
 
         self.bring_stage()
 
-        if self.stage in [1, 3, 5]:
+        if self.stage % 2 == 1:
             self.character.velocity = [self.block_size / 12, 0]
             self.character.is_man = 0
         else:
@@ -685,6 +741,7 @@ class GameWidget(Widget):
         self.character_pos_init()
 
     def init_game(self, ca, cb):
+
         # start
         Clock.schedule_interval(self.update, 1.0 / 60.0)
         Clock.schedule_interval(self.update_fps, .1)
@@ -694,14 +751,13 @@ class GameWidget(Widget):
         Clock.schedule_interval(self.txupdate, 0)
 
         # bring stage
-        # self.stage = 5
         self.bring_stage()
 
-        self.character.velocity = [self.block_size / 16, 0]
+        self.character.velocity = [self.block_size / 12, 0]
 
         # map init
         with self.background_widget.canvas:
-            texture = CoreImage('data/starBackground.png').texture
+            texture = CoreImage('data/blue_land.png').texture
             texture.wrap = 'repeat'
             self.rect_1 = Rectangle(
                 texture=texture, size=self.size, pos=self.pos)
@@ -744,7 +800,8 @@ class GameWidget(Widget):
             # meet Block
             if self.character.collide_widget(brick):
                 z = Vector(self.character.center) - Vector(brick.center)
-                if -0.72 < z.normalize()[0] < 0.72:
+
+                if -0.70 < z.normalize()[0] < 0.70:
                     # down
                     if self.character_y_collision(brick):
                         self.is_jumping = False
@@ -773,8 +830,25 @@ class GameWidget(Widget):
         # monster
         for monster in self.monsters:
             if self.character.collide_widget(monster):
-                self.character.pos = [self.x + 20, self.y]
-                print "hit monster id: %s" % monster.uid
+
+                # 1. DIE
+                if monster.status == 1:
+                    self.character.pos = [self.x + 20, self.y]
+
+                # 2. GROW
+                elif monster.status == 2:
+                    anim = Animation(
+                        size=[self.character.player_image.width * 1.5, self.character.player_image.height * 1.5], duration=.2)
+                    if anim:
+                        anim.stop(self.character.player_image)
+                        anim.start(self.character.player_image)
+                    # remove monster
+                    self.remove_widget(monster)
+                    self.monsters.remove(monster)
+                # 3. MESSAGE
+                elif monster.status == 3:
+                    pass
+
                 self.is_jumping = False
 
         # trap
@@ -782,10 +856,15 @@ class GameWidget(Widget):
             if self.character.collide_widget(trap):
                 self.init_stage()
 
+        # tip label
+        if self.tip_label.opacity <= 1.0:
+            self.tip_label.opacity += 0.005
+
     def bring_stage(self):
 
         # default
         self.time = 10
+        self.tip_label.opacity = 0.0
 
         if self.stage == 1:
             _bricks = STAGE1_BRICKS
@@ -796,7 +875,7 @@ class GameWidget(Widget):
             # hide controller
             app.game.left_button.opacity = 0.0
             app.game.right_button.opacity = 0.0
-            self.character.comment = "A키를 눌러서 점프를 해보잣!"
+            self.character.comment = "안녕하세요 완호입니다."
             self.block_size = 64
 
         elif self.stage == 2:
@@ -804,94 +883,196 @@ class GameWidget(Widget):
             _signs = STAGE2_SIGNS
             _monsters = STAGE2_MONSTERS
             _traps = STAGE2_TRAPS
-            self.tip = "소닉을 좋아했던 여자가 있었습니다."
-            self.character.comment = "기록 갱신은 나의 목표"
-            self.block_size = 60
-            # app.game.left_button.opacity = 1.0
-            # app.game.right_button.opacity = 1.0
+            self.tip2 = "화면을 터치하면 점프를 합니다."
+            self.tip = "소닉을 좋아하셨다는 형수님께.."
+            self.character.comment = "안녕하세요 여진입니다."
+            self.block_size = 64
 
         elif self.stage == 3:
             _bricks = STAGE3_BRICKS
             _signs = STAGE3_SIGNS
             _monsters = STAGE3_MONSTERS
             _traps = STAGE3_TRAPS
-            self.tip = "이 게임은 둘의 결혼을 축하하기 위해 만들었습니다."
-            self.block_size = 50
+            self.tip = "결혼을 축하드리고자 간단한 게임을 만들었습니다."
+            self.tip2 = "재미있게 즐겨주세요"
+            self.character.comment = ""
+            self.block_size = 64
 
         elif self.stage == 4:
             _bricks = STAGE4_BRICKS
             _signs = STAGE4_SIGNS
             _monsters = STAGE4_MONSTERS
             _traps = STAGE4_TRAPS
-            self.block_size = 40
+            self.block_size = 58
 
-            self.tip = "사랑하는 것은 천국을 살짝 엿보는 것이다"
-            self.tip2 = "작가 카렌 선드"
+            self.tip = "동화처럼 오래오래 행복하게 잘살았으면 해요"
+            self.tip2 = ""  # 동화처럼 오래오래 행복하게 잘살았으면 해요"
+            self.character.comment = ""
+
+        # 보너스 스테이지 추가예정
+        # 다음 스테이지 전에 챕터 소개
 
         elif self.stage == 5:
             _bricks = STAGE5_BRICKS
             _signs = STAGE5_SIGNS
             _monsters = STAGE5_MONSTERS
             _traps = STAGE5_TRAPS
-            self.block_size = 30
+            self.block_size = 58
 
-            self.tip = "사랑 받고 싶다면 사랑하라, 그리고 사랑스럽게 행동하라"
-            self.tip2 = "정치가 벤자민 프랭클린"
+            self.tip = "회식이 있던 날, 형은 고깃집에 가게됩니다."
+            self.tip2 = "먹으면 먹을수록 살이 찝니다."
+            self.character.comment = "냠냠냠"
 
         elif self.stage == 6:
             _bricks = STAGE6_BRICKS
             _signs = STAGE6_SIGNS
             _monsters = STAGE6_MONSTERS
             _traps = STAGE6_TRAPS
+            self.block_size = 64
 
-            self.tip = "강력한 사랑은 판단하지 않는다. 주기만 할 뿐이다."
-            self.tip2 = "수녀 마더 테레사"
+            # 장모님 캐릭터?
+            self.tip = "고깃집 여사장님께서 형을 신랑감으로 알아보죠"
+            self.tip2 = "미래의 장모님이십니다."
+            self.character.comment = "자네 내 딸 한번 만나보지 않겠나? "
 
         elif self.stage == 7:
             _bricks = STAGE7_BRICKS
             _signs = STAGE7_SIGNS
             _monsters = STAGE7_MONSTERS
             _traps = STAGE7_TRAPS
-            self.tip = "결혼은 따듯한 사람과 하거라."
-            self.tip2 = "어바웃 타임에서 주인공 아버님"
+
+            self.tip = "하지만 소개팅 당일 형은 지각을 합니다."
+            self.tip2 = "무려 한시간을!!"
+            self.character.comment = "아이고 늦었다아"
+            self.block_size = 64
 
         elif self.stage == 8:
             _bricks = STAGE8_BRICKS
             _signs = STAGE8_SIGNS
             _monsters = STAGE8_MONSTERS
             _traps = STAGE8_TRAPS
-            self.tip = "사랑이란 서로 마주보는 것이 아니라, 둘이서 같은 방향을 보는 것이다"
-            self.tip2 = "생텍쥐베리"
+
+            # 만남
+            self.tip = "늦게 도착한 형은 형수님을 보고 첫눈에 반하십니다."
+            self.tip2 = "형수님께서는 형의 마음을 서서히 받아주십니다."
+            self.character.comment = "지각쟁이"
+            self.block_size = 64
+
+
+        # 보너스 스테이지 추가예정
+        # 다음 스테이지 전에 챕터 소개
 
         elif self.stage == 9:
             _bricks = STAGE9_BRICKS
             _signs = STAGE9_SIGNS
             _monsters = STAGE9_MONSTERS
             _traps = STAGE9_TRAPS
-            self.tip = "흐아아앙"
+            self.tip = "형과 형수님은 사람들의 건강을 도와주는 일을 합니다."
+            self.tip2 = "그래서 서로를 잘 이해하나봐요"
+            self.block_size = 64
 
         elif self.stage == 10:
             _bricks = STAGE10_BRICKS
             _signs = STAGE10_SIGNS
             _monsters = STAGE10_MONSTERS
             _traps = STAGE10_TRAPS
-            self.tip = "그 사람은 바로.."
+            self.tip = "열심히 일하고 여행도 가고 맛집도 갑니다."
+            self.tip2 = "먹으면 찌는데 형만 찝니다. 심지어 형수님이 더 많이 먹는데.."
+            self.block_size = 64
 
         elif self.stage == 11:
             _bricks = STAGE11_BRICKS
             _signs = STAGE11_SIGNS
             _monsters = STAGE11_MONSTERS
             _traps = STAGE11_TRAPS
-            self.tip = "사랑이라는 게 처음부터 풍덩 빠져 버리는 건 줄만 알았지… 이렇게 서서히 물들어가는 것인 줄은 몰랐어"
-            self.tip2 = "두 캐릭터를 이용하세요"
+            self.tip = "결혼준비로 바쁘던 5월에 데이트"
+            self.tip2 = ""
+            self.block_size = 64
 
         elif self.stage == 12:
             _bricks = STAGE12_BRICKS
             _signs = STAGE12_SIGNS
             _monsters = STAGE12_MONSTERS
             _traps = STAGE12_TRAPS
-            self.tip = StringProperty("You make me want to be a better man")
-            self.tip2 = "두 캐릭터를 이용하세요"
+            self.tip = "형과 형수님께서 남산으로 데이트를 갑니다."
+            self.tip2 = ""
+            self.block_size = 64
+
+        elif self.stage == 13:
+            _bricks = STAGE13_BRICKS
+            _signs = STAGE13_SIGNS
+            _monsters = STAGE13_MONSTERS
+            _traps = STAGE13_TRAPS
+            self.tip = "한 건물에서 야경을 보면 이쁘다며 데려갑니다."
+            self.tip2 = "우린 예약안해서 여기 투숙객인 것 처럼 위장해야되"
+            self.block_size = 64
+
+        elif self.stage == 14:
+            _bricks = STAGE14_BRICKS
+            _signs = STAGE14_SIGNS
+            _monsters = STAGE14_MONSTERS
+            _traps = STAGE14_TRAPS
+            self.tip = "그곳에는 형이 준비한 팜플렛과 사진들이 걸려있었죠"
+            self.tip2 = "서프라이즈!"
+            self.block_size = 64
+
+        elif self.stage == 15:
+            _bricks = STAGE15_BRICKS
+            _signs = STAGE15_SIGNS
+            _monsters = STAGE15_MONSTERS
+            _traps = STAGE15_TRAPS
+            self.tip = "형이 준비한 영상을 틀자..형수님은 펑펑 웁니다."
+            self.tip2 = ""
+            self.block_size = 64
+
+        elif self.stage == 16:
+            _bricks = STAGE16_BRICKS
+            _signs = STAGE16_SIGNS
+            _monsters = STAGE16_MONSTERS
+            _traps = STAGE16_TRAPS
+            self.tip = "Will you marry me?"
+            self.tip2 = ""
+            self.block_size = 64
+
+        elif self.stage == 17:
+            _bricks = STAGE17_BRICKS
+            _signs = STAGE17_SIGNS
+            _monsters = STAGE17_MONSTERS
+            _traps = STAGE17_TRAPS
+            self.tip = "결혼식 소개를 마지막으로 이 게임을 마치도록 하겠습니다."
+            self.tip2 = "오글거려서 손가락이 안펴지네요"
+            self.block_size = 64
+
+        elif self.stage == 18:
+            _bricks = STAGE18_BRICKS
+            _signs = STAGE18_SIGNS
+            _monsters = STAGE18_MONSTERS
+            _traps = STAGE18_TRAPS
+            self.tip = "일시: 2015년 6월 27일 오후 1시"
+            self.tip2 = "장소: 경기도 성남시 분당구 삼평동 689번지 (판교)차바이오컴플렉스"
+            self.block_size = 64
+
+        elif self.stage == 19:
+            _bricks = STAGE19_BRICKS
+            _signs = STAGE19_SIGNS
+            _monsters = STAGE19_MONSTERS
+            _traps = STAGE19_TRAPS
+            self.tip = "게임을 플레이해주셔서 감사합니다."
+            self.tip2 = "두 분의 행복을 축하해주세요."
+            self.block_size = 64
+
+        elif self.stage == 20:
+            _bricks = STAGE20_BRICKS
+            _signs = STAGE20_SIGNS
+            _monsters = STAGE20_MONSTERS
+            _traps = STAGE20_TRAPS
+            self.tip = "조카는 언제쯤 볼 수 있을까요?."
+            self.tip2 = "-끝-"
+            self.block_size = 64
+
+        # 청첩장 링크 바로가기
+        # 게임 종료
+        # 크레딧
 
         self.character.block_size = self.block_size
 
@@ -915,9 +1096,9 @@ class GameWidget(Widget):
             new_monster = Monster()
             new_monster.block_size = self.block_size
             new_monster.x = self.center[
-                0] + (pos[0] * self.block_size) + self.block_size / 4
+                0] + (pos[0] * self.block_size)
             new_monster.y = self.y + \
-                (pos[1] * self.block_size) + self.block_size / 4
+                (pos[1] * self.block_size)
             self.add_widget(new_monster)
             self.monsters = self.monsters + [new_monster]
 
@@ -933,6 +1114,8 @@ class GameWidget(Widget):
 
     # Control
     def on_touch_down(self, touch):
+        # if app.game.a_button.collide_point(*touch.pos):
+        self.character_jump()
 
         # Princess Move
         # if self.collide_point(*touch.pos):
@@ -947,47 +1130,47 @@ class GameWidget(Widget):
         #        self.touch = touch
 
         # Character Move
-        if self.stage in [1, ]:
-            pass
-        else:
-            if app.game.left_button.collide_point(*touch.pos):
-                self.character.velocity = [-self.block_size / 12, 0]
-                self.is_key_down = True
-                touch.grab(self)
-            if app.game.right_button.collide_point(*touch.pos):
-                self.character.velocity = [self.block_size / 12, 0]
-                self.is_key_down = True
-                touch.grab(self)
+        # if self.stage in [1, ]:
+        #     pass
+        # else:
+        #     if app.game.left_button.collide_point(*touch.pos):
+        #         self.character.velocity = [-self.block_size / 12, 0]
+        #         self.is_key_down = True
+        #         touch.grab(self)
+        #     if app.game.right_button.collide_point(*touch.pos):
+        #         self.character.velocity = [self.block_size / 12, 0]
+        #         self.is_key_down = True
+        #         touch.grab(self)
 
-        if app.game.a_button.collide_point(*touch.pos):
-            self.character_jump()
         # if app.game.b_button.collide_point(*touch.pos):
         #     self.character_jump()
 
     def on_touch_up(self, touch):
+        pass
         # if self.princess.collide_point(*touch.pos):
         #     self.is_touch = False
         #     self.princess.velocity = [0, 0]
 
-        if self.stage in [1, ]:
-            pass
-        else:
-            if self.control_widget_a.collide_point(*touch.pos) & self.is_key_down:
-                self.character.velocity = [0, 0]
-                self.is_key_down = False
-                touch.ungrab(self)
+        # if self.stage:
+        #     pass
+        # else:
+        #     if self.control_widget_a.collide_point(*touch.pos) & self.is_key_down:
+        #         self.character.velocity = [0, 0]
+        #         self.is_key_down = False
+        #         touch.ungrab(self)
 
     def on_touch_move(self, touch):
-        if self.stage in [1, ]:
-            pass
-        else:
-            if touch.grab_current is self:
-                if not self.control_widget_a.collide_point(*touch.pos):
-                    self.character.velocity = [0, 0]
-                    self.is_key_down = False
-                    touch.ungrab(self)
+        pass
+        # if self.stage in [1, ]:
+        #     pass
+        # else:
+        #     if touch.grab_current is self:
+        #         if not self.control_widget_a.collide_point(*touch.pos):
+        #             self.character.velocity = [0, 0]
+        #             self.is_key_down = False
+        #             touch.ungrab(self)
 
-    # Jump
+        # Jump
     jump_accel = 0
     before_y = 0
     dt = 0
@@ -1026,9 +1209,15 @@ class GameWidget(Widget):
         t = Clock.get_boottime()
         v = 0.1
         ratio = round(self.width / self.height, 1)
-        self.rect_1.tex_coords = - \
-            (t * v), 0, -(t * v + ratio), 0,  - \
-            (t * v + ratio), -1, -(t * v), -1
+
+        if self.stage % 2 == 0:
+            self.rect_1.tex_coords = - \
+                (t * v), 0, -(t * v + ratio), 0,  - \
+                (t * v + ratio), -1, -(t * v), -1
+        else:
+            self.rect_1.tex_coords = - \
+                (t * v), 0, -(t * v - ratio), 0,  - \
+                (t * v - ratio), -1, -(t * v), -1
 
 
 class GameScreen(Screen):
