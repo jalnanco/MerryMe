@@ -178,7 +178,7 @@ Builder.load_string('''
     center: root.center
     Image:
         id: brick_image
-        source: 'data/boxCrate_double.png'
+        source: 'data/box2.png'
         center: root.center
         size: root.block_size, root.block_size
 <Sign>:
@@ -224,7 +224,7 @@ Builder.load_string('''
     size: player_image.width-10, player_image.height-10
     Image:
         id: player_image
-        source: 'data/girl64.png' if root.is_man else 'data/boy64.png'
+        source: 'data/angel.png' if root.is_man else 'data/boy64.png'
         center: root.center
         size: root.block_size, root.block_size
         allow_stretch: True
@@ -652,7 +652,7 @@ class GameWidget(Widget):
     monsters = []
     traps = []
     score = NumericProperty(0)
-    stage = NumericProperty(3)
+    stage = NumericProperty(1)
     tip = StringProperty("어린시절 슈퍼마리오를 좋아했던 우리 형과..")
     tip2 = StringProperty("")
     tip_label = ObjectProperty()
@@ -701,7 +701,7 @@ class GameWidget(Widget):
         # self.princess.pos = [self.width - self.princess.width - 20, self.y]
 
     def character_pos_init(self):
-        self.character.player_image.size = [64, 64]
+        self.character.player_image.size = [128, 128]
 
         if self.character.is_man == 0:
             self.character.pos = [self.x + 20, self.y]
@@ -957,7 +957,6 @@ class GameWidget(Widget):
             self.tip2 = "형수님께서는 형의 마음을 서서히 받아주십니다."
             self.character.comment = "지각쟁이"
             self.block_size = 64
-
 
         # 보너스 스테이지 추가예정
         # 다음 스테이지 전에 챕터 소개
