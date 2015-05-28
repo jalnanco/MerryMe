@@ -154,7 +154,7 @@ Builder.load_string('''
     center: root.center
     Image:
         id: monster_image
-        source: "data/cherry.png" if root.status == 4 else "data/spring.png"
+        source:  "data/springboardUp.png" if root.status == 4 else "data/sandRing.png" if root.status == 5 else "data/cherry.png"
 
         center: root.center
         size: root.block_size, root.block_size
@@ -397,7 +397,7 @@ class Enemy(Widget):
 
 class Monster(Widget):
     block_size = NumericProperty(64)
-    status = 0
+    status = NumericProperty(0)
 
 
 class Trap(Widget):
@@ -417,22 +417,52 @@ class ControlWidget(Widget):
 # BOX - 64 x 64
 
 
-# STAGE 1 - 챕터1
+# STAGE 1 - INTRO
 STAGE1_BRICKS = []
 STAGE1_SIGNS = [[-6, 0]]
 STAGE1_MONSTERS = []
 STAGE1_TRAPS = []
 
-# STAGE 2 - BLOCK JUMP
+# STAGE 2 - SONIC THEME
 STAGE2_BRICKS = [[-6, 0], [-5, 0], [-4, 0], [-3, 0], [-2, 0], [-1, 0],
                  [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0],
                  [-5, 1], [-4, 1], [-3, 1], [-2, 1], [-1, 1],
                  [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1],
                  [-4, 2], [-3, 2], [-2, 2], [-1, 2],
-                 [0, 2], [1, 2], [2, 2], [3, 2], [4, 2],
+                 [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [6, 1]
                  ]
 STAGE2_SIGNS = []  # [[3, 3]]
-STAGE2_MONSTERS = [[7, 0, 4], ]
+STAGE2_MONSTERS = [
+    # MAP
+    [8, 0, 4],
+    # GOLD RING
+    [10, 0, 5],
+    [11, 0, 5],
+    [9, 0, 5],
+    [8, 1, 5],
+    [8, 2, 5],
+    [7, 3, 5],
+    [7, 4, 5],
+    [6, 4, 5],
+    [6, 3, 5],
+    [5, 5, 5],
+    [4, 4, 5],
+    [3, 3, 5],
+    [2, 3, 5],
+    [1, 3, 5],
+    [0, 4, 5],
+    [-1, 5, 5],
+    [-2, 4, 5],
+    [-3, 5, 5],
+    [-4, 4, 5],
+    [-5, 5, 5],
+    [-6, 4, 5],
+    [-7, 3, 5],
+    [-8, 2, 5],
+    [-9, 1, 5],
+    [-10, 0, 5],
+    [-11, 0, 5],
+]
 STAGE2_TRAPS = []
 
 # STAGE 3 - AVOID TRAP
@@ -802,6 +832,13 @@ class GameWidget(Widget):
                 # 4. JUMP - SONIC
                 elif monster.status == 4:
                     self.character_jump(2)  # jump time x 2
+                # 5. Gold Ring - SONIC
+                elif monster.status == 5:
+                    # up and hide animation
+                    # remove gold ring
+                    self.remove_widget(monster)
+                    self.monsters.remove(monster)
+
                 self.is_jumping = False
 
         # trap
@@ -819,6 +856,7 @@ class GameWidget(Widget):
         self.time = 10
         self.tip_label.opacity = 0.0
 
+        # Chapter 1
         if self.stage == 1:
             _bricks = STAGE1_BRICKS
             _signs = STAGE1_SIGNS
@@ -833,6 +871,7 @@ class GameWidget(Widget):
             self.character.comment = "안녕하세요 완호입니다."
             self.block_size = 64
 
+        # Sonic Theme
         elif self.stage == 2:
             _bricks = STAGE2_BRICKS
             _signs = STAGE2_SIGNS
@@ -841,7 +880,7 @@ class GameWidget(Widget):
             self.tip = "소닉을 좋아하셨다는 형수님과.."
             self.tip2 = "화면을 터치하면 점프를 합니다."
             self.character.comment = "안녕하세요 여진입니다."
-            self.block_size = 30
+            self.block_size = 40
 
         elif self.stage == 3:
             _bricks = STAGE3_BRICKS
@@ -851,7 +890,7 @@ class GameWidget(Widget):
             self.tip = "슈퍼마리오를 좋아하셨다는 형님께 바칩니다."
             self.tip2 = "재미있게 즐겨주세요"
             self.character.comment = ""
-            self.block_size = 64
+            self.block_size = 40
 
         elif self.stage == 4:
             _bricks = STAGE4_BRICKS
