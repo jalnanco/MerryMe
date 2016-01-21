@@ -47,12 +47,12 @@ app = None
 # 여기에 kivy파일을 추가함 - 그림파일 불러오기용
 Builder.load_string('''
 #:import WipeTransition kivy.uix.screenmanager.WipeTransition
-# <Widget>:
-#    canvas.after:
-#        Line:
-#            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
-#            dash_offset: 2
-#            dash_length: 3
+<Widget>:
+    canvas.after:
+        Line:
+            rectangle: self.x+1,self.y+1,self.width-1,self.height-1
+            dash_offset: 2
+            dash_length: 3
 
 <EndScreen>:
     BoxLayout:
@@ -94,6 +94,8 @@ Builder.load_string('''
             size_hint_x:0.1
 
 <MenuScreen>:
+    menu_text:menu_text
+    menu_button:menu_button
     canvas:
         Color:
             rgb: 255/255., 255/255., 255/255., 1
@@ -115,13 +117,77 @@ Builder.load_string('''
             orientation: 'vertical' if self.height > self.width else 'horizontal'
             BoxLayout:
             Label:
+                id: menu_text
                 text: 'Summer Wedding Run'
                 font_size: 60
                 font_name: 'data/PH-600RegularCaps.otf'
-                color: (0, 0, 0, 1)
+                color: (0,0,0,1)
+                opacity: 0
             Button:
+                id: menu_button
                 text: 'Start'
-                background_color: 0/255., 140/255., 140/255., 1
+                background_color: 0/255., 0/255., 0/255., 1
+                font_name: 'data/PH-600RegularCaps.otf'
+                size_hint_y:0.2
+                on_press: root.manager.transition = WipeTransition(); root.manager.current = 'story screen'
+                opacity: 0
+            BoxLayout:
+                size_hint_y:0.1
+            BoxLayout:
+        BoxLayout:
+            size_hint_x:0.1
+
+<StoryScreen>
+    story_text1:story_text1
+    story_text2:story_text2
+    story_text3:story_text3
+    story_button:story_button
+    canvas:
+        Color:
+            rgb: 255/255., 255/255., 255/255., 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    # Image:
+    #    source: 'data/hudHeart_full.png'
+    #    pos: root.pos[0], root.pos[1] + 100
+    BoxLayout:
+        pos: root.pos
+        size: root.size
+        padding: '10dp'
+        spacing: '10dp'
+        BoxLayout:
+            size_hint_x:0.1
+        BoxLayout:
+            size_hint_x:0.2
+            orientation: 'vertical' if self.height > self.width else 'horizontal'
+            BoxLayout:
+            Label:
+                id: story_text1
+                text: '옛날 옛날에 행복한 커플하나가 결혼을 앞두고 있었다.'
+                font_size: 40
+
+                font_name: 'data/NanumGothic.ttf'
+                color: (0,0,0,1)
+                opacity: 0
+            Label:
+                id: story_text2
+                text: '이들의 사랑을 시샘한 마녀는'
+                font_size: 40
+                font_name: 'data/NanumGothic.ttf'
+                color: (0,0,0,1)
+                opacity: 0
+            Label:
+                id: story_text3
+                text: '그들을 블랙캐슬 동쪽과 서쪽에 나누어 가둔다.'
+                font_size: 40
+                font_name: 'data/NanumGothic.ttf'
+                color: (0,0,0,1)
+                opacity: 0
+            Button:
+                id: story_button
+                text: 'Skip'
+                background_color: 0/255., 0/255., 0/255., 1
                 font_name: 'data/PH-600RegularCaps.otf'
                 size_hint_y:0.2
                 on_press: root.manager.transition = WipeTransition(); root.manager.current = 'game screen'
@@ -130,6 +196,7 @@ Builder.load_string('''
             BoxLayout:
         BoxLayout:
             size_hint_x:0.1
+
 
 <Brick>:
     size: brick_image.width, brick_image.height
@@ -160,12 +227,12 @@ Builder.load_string('''
     player_image:player_image
     other_image:other_image
 
-    size: player_image.width-10, player_image.height-10
+    size: player_image.width / 2 -12, player_image.height
     Image:
         id: player_image
         source: 'data/angel.png' if root.is_man else 'data/knight_right.png'
         center: root.center
-        size: root.block_size, root.block_size
+        size: root.block_size * 2, root.block_size * 2
         allow_stretch: True
     Label:
         text: root.comment
@@ -372,8 +439,62 @@ class Trap(Widget):
     pass
 
 
+class StoryScreen(Screen):
+    story_text1 = ObjectProperty()
+    story_text2 = ObjectProperty()
+    story_text3 = ObjectProperty()
+    story_button = ObjectProperty()
+
+    def on_enter(self):
+        anim = Animation(
+            opacity=1.0, duration=2.0)
+
+#        anim &= Animation(size=[self.menu_text.size[0]+4, self.menu_text[1]+4], duration=.2)
+        anim.start(self.story_text1)
+        Clock.schedule_once(self.show_text2, 2.0)
+
+    def show_text2(self, dt):
+        anim = Animation(
+            opacity=1.0, duration=2.0)
+        anim.start(self.story_text2)
+        Clock.schedule_once(self.show_text3, 2.0)
+
+    def show_text3(self, dt):
+        anim = Animation(
+            opacity=1.0, duration=2.0)
+        anim.start(self.story_text3)
+        self.story_button.opacity = 1.0
+        left = Animation(
+            opacity=0.0, duration=0.3)
+        right = Animation(
+            opacity=1.0, duration=0.3)
+        anim = left + right
+        anim.start(self.story_button)
+        Clock.schedule_once(self.show_button, .3)
+
+    def show_button(self, dt):
+        self.story_button.text = "Start"
+
+
 class MenuScreen(Screen):
-    pass
+    menu_text = ObjectProperty()
+    menu_button = ObjectProperty()
+
+    def on_enter(self):
+        anim = Animation(
+            opacity=1.0, duration=2.0)
+#        anim &= Animation(size=[self.menu_text.size[0]+4, self.menu_text[1]+4], duration=.2)
+        anim.start(self.menu_text)
+        Clock.schedule_once(self.show_button, 2.0)
+
+    def show_button(self, dt):
+        self.menu_button.opacity = 1.0
+        left = Animation(
+            opacity=0.0, duration=0.3)
+        right = Animation(
+            opacity=1.0, duration=0.3)
+        anim = left + right
+        anim.start(self.menu_button)
 
 
 # STAGE 0
@@ -674,7 +795,8 @@ class GameWidget(Widget):
         self.fps = str(int(Clock.get_fps()))
 
     def character_pos_init(self):
-        self.character.player_image.size = [self.block_size, self.block_size]
+        self.character.player_image.size = [
+            self.block_size * 2, self.block_size * 2]
 
         if self.character.is_man == 0:
             self.character.pos = [self.x + 20, self.y]
@@ -922,6 +1044,8 @@ class GameWidget(Widget):
                 elif monster.status == 6:
                     self.character.velocity = [0, 0]
                     self.score += 1
+                    monster.status = 3
+
                 elif monster.status == 22:
                     self.character.velocity = [
                         self.block_size / self.speed_ratio, 0]
@@ -953,7 +1077,7 @@ class GameWidget(Widget):
             _traps = STAGE0_TRAPS
 
             # hide controller
-            self.tip = "신랑 완호와"
+            self.tip = "동쪽"
             self.tip2 = ""
             self.character.comment = ""
             self.block_size = 64
@@ -967,7 +1091,7 @@ class GameWidget(Widget):
             _traps = STAGE1_TRAPS
 
             # hide controller
-            self.tip = "신부 여진의"
+            self.tip = "서쪽"
             self.tip2 = ""
             self.character.comment = ""
             self.block_size = 64
@@ -979,7 +1103,7 @@ class GameWidget(Widget):
             _signs = STAGE2_SIGNS
             _monsters = STAGE2_MONSTERS
             _traps = STAGE2_TRAPS
-            self.tip = "축복을 모으는 게임"
+            self.tip = ""
             self.tip2 = ""
             self.character.comment = ""
             self.block_size = 64
@@ -992,7 +1116,7 @@ class GameWidget(Widget):
             _monsters = STAGE3_MONSTERS
             _traps = STAGE3_TRAPS
 
-            self.tip = "1차 클로즈 베타입니다."
+            self.tip = ""
             self.tip2 = ""
             self.character.comment = ""
             self.block_size = 55
@@ -1004,7 +1128,7 @@ class GameWidget(Widget):
             _monsters = STAGE4_MONSTERS
             _traps = STAGE4_TRAPS
             self.block_size = 64
-            self.tip = "스테이즈는 아직 구상중이니 엉망일수 있어요"
+            self.tip = ""
             self.tip2 = ""
             self.character.comment = ""
 
@@ -1027,7 +1151,7 @@ class GameWidget(Widget):
             _traps = STAGE5_TRAPS
             self.block_size = 64
 
-            self.tip = "테마, 컨셉, 크기, 조작? 등 다양한 의견좀 주세요"
+            self.tip = ""
             self.tip2 = ""
             self.character.comment = ""
 
@@ -1048,8 +1172,8 @@ class GameWidget(Widget):
             _monsters = STAGE7_MONSTERS
             _traps = STAGE7_TRAPS
 
-            self.tip = "STAGE 2"
-            self.tip2 = "스토리 모드"
+            self.tip = ""
+            self.tip2 = ""
             self.character.comment = ""
             self.block_size = 64
 
@@ -1059,8 +1183,8 @@ class GameWidget(Widget):
             _monsters = STAGE8_MONSTERS
             _traps = STAGE8_TRAPS
 
-            self.tip = "신랑 완호와 신부 여진은"
-            self.tip2 = "잘 어울리는 커플입니다."
+            self.tip = ""
+            self.tip2 = ""
             self.character.comment = ""
             self.block_size = 40
 
@@ -1069,7 +1193,7 @@ class GameWidget(Widget):
             _signs = STAGE9_SIGNS
             _monsters = STAGE9_MONSTERS
             _traps = STAGE9_TRAPS
-            self.tip = "둘 다 먹는 걸 매우 좋아하고"
+            self.tip = ""
             self.tip2 = ""
             self.block_size = 40
 
@@ -1078,7 +1202,7 @@ class GameWidget(Widget):
             _signs = STAGE10_SIGNS
             _monsters = STAGE10_MONSTERS
             _traps = STAGE10_TRAPS
-            self.tip = "둘 다 사람을 돕는 일을 하고 있으며"
+            self.tip = ""
             self.tip2 = ""
             self.block_size = 64
 
@@ -1087,8 +1211,8 @@ class GameWidget(Widget):
             _signs = STAGE11_SIGNS
             _monsters = STAGE11_MONSTERS
             _traps = STAGE11_TRAPS
-            self.tip = "한눈에 봐도 잘 어울려요"
-            self.tip2 = "비율, 외모, 성격, 울보, 먹보, 바보.."
+            self.tip = ""
+            self.tip2 = ""
             self.block_size = 64
 
         elif self.stage == 12:
@@ -1096,8 +1220,8 @@ class GameWidget(Widget):
             _signs = STAGE12_SIGNS
             _monsters = STAGE12_MONSTERS
             _traps = STAGE12_TRAPS
-            self.tip = "무엇보다 서로를 이해하고"
-            self.tip2 = "아껴주는 한쌍입니다."
+            self.tip = ""
+            self.tip2 = ""
             self.block_size = 64
 
         elif self.stage == 13:
@@ -1105,8 +1229,8 @@ class GameWidget(Widget):
             _signs = STAGE13_SIGNS
             _monsters = STAGE13_MONSTERS
             _traps = STAGE13_TRAPS
-            self.tip = "STAGE 3"
-            self.tip2 = "스토리 모드"
+            self.tip = ""
+            self.tip2 = ""
             self.block_size = 64
             self.character.other_image.opacity = 1.0
 
@@ -1115,7 +1239,7 @@ class GameWidget(Widget):
             _signs = STAGE14_SIGNS
             _monsters = STAGE14_MONSTERS
             _traps = STAGE14_TRAPS
-            self.tip = "결혼식 날짜는 6월 27일"
+            self.tip = ""
             self.tip2 = ""
             self.block_size = 64
 
@@ -1124,7 +1248,7 @@ class GameWidget(Widget):
             _signs = STAGE15_SIGNS
             _monsters = STAGE15_MONSTERS
             _traps = STAGE15_TRAPS
-            self.tip = "판교에서 이루어 집니다."
+            self.tip = ""
             self.tip2 = ""
             self.block_size = 64
 
@@ -1133,7 +1257,7 @@ class GameWidget(Widget):
             _signs = STAGE16_SIGNS
             _monsters = STAGE16_MONSTERS
             _traps = STAGE16_TRAPS
-            self.tip = "많은 참석 바랍니다."
+            self.tip = ""
             self.tip2 = ""
             self.block_size = 64
 
@@ -1142,7 +1266,7 @@ class GameWidget(Widget):
             _signs = STAGE17_SIGNS
             _monsters = STAGE17_MONSTERS
             _traps = STAGE17_TRAPS
-            self.tip = "쓸 내용이 없다"
+            self.tip = ""
             self.tip2 = ""
             self.block_size = 64
 
@@ -1169,62 +1293,7 @@ class GameWidget(Widget):
             _signs = STAGE20_SIGNS
             _monsters = STAGE20_MONSTERS
             _traps = STAGE20_TRAPS
-            self.tip = "마지막"
-            self.tip2 = "총 20스테이지 예상중"
-            self.block_size = 64
-
-
-#        elif self.stage == 15:
-#            _bricks = STAGE15_BRICKS
-#            _signs = STAGE15_SIGNS
-#            _monsters = STAGE15_MONSTERS
-#            _traps = STAGE15_TRAPS
-#            self.tip = "BONUS STAGE"
-#            self.tip2 = "스토리는 끝났습니다. 이제 게임이 어려워집니다."
-#            self.block_size = 64
-#
-#        elif self.stage == 16:
-#            _bricks = STAGE16_BRICKS
-#            _signs = STAGE16_SIGNS
-#            _monsters = STAGE16_MONSTERS
-#            _traps = STAGE16_TRAPS
-#            self.tip = "1"
-#            self.tip2 = ""
-#            self.block_size = 64
-#
-#        elif self.stage == 17:
-#            _bricks = STAGE17_BRICKS
-#            _signs = STAGE17_SIGNS
-#            _monsters = STAGE17_MONSTERS
-#            _traps = STAGE17_TRAPS
-#            self.tip = "2"
-#            self.tip2 = ""
-#            self.block_size = 64
-#
-#        elif self.stage == 18:
-#            _bricks = STAGE18_BRICKS
-#            _signs = STAGE18_SIGNS
-#            _monsters = STAGE18_MONSTERS
-#            _traps = STAGE18_TRAPS
-#            self.tip = "3"
-#            self.tip2 = ""
-#            self.block_size = 64
-#
-#        elif self.stage == 19:
-#            _bricks = STAGE19_BRICKS
-#            _signs = STAGE19_SIGNS
-#            _monsters = STAGE19_MONSTERS
-#            _traps = STAGE19_TRAPS
-#            self.tip = "4"
-#            self.tip2 = ""
-#            self.block_size = 64
-
-        elif self.stage == 20:
-            _bricks = STAGE20_BRICKS
-            _signs = STAGE20_SIGNS
-            _monsters = STAGE20_MONSTERS
-            _traps = STAGE20_TRAPS
-            self.tip = "5"
+            self.tip = ""
             self.tip2 = ""
             self.block_size = 64
 
@@ -1346,7 +1415,9 @@ class GameApp(App):
         root.add_widget(MenuScreen(name='menu screen'))
         root.add_widget(EndScreen(name='end screen'))
 
-        self.game = GameScreen(name='game screen')
+        root.add_widget(GameScreen(name='game screen'))
+        self.game = StoryScreen(name='story screen')
+
         root.add_widget(self.game)
         return root
 
